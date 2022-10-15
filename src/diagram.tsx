@@ -91,18 +91,32 @@ interface Tiering {
   tiersByObject: {
     [objectId: string]: number;
   };
-  longestPath: number;
-  partitionId: number;
-  largestTierSize: number;
   objectsByTier: {
     [tierId: number]: string[];
   };
+  longestPath: number;
+  partitionId: number;
+  largestTier: number;
+  secondLargestTier: number | undefined;
+  largestTierSize: number;
+  rowsNeeded: number;
 }
 
 interface ActualTierings {
-  [categoryId: string]: {
-    [partitionId: number]: Tiering;
+  [categoryId: string]: Tiering[];
+}
+
+interface Placements {
+  objects: {
+    /** column, row */
+    [objectId: string]: [number, number];
   };
+  categories: {
+    /** left, top, right, bottom */
+    [categoryId: string]: [number, number, number, number];
+  };
+  numRows: number;
+  numCols: number;
 }
 
 const continueWalking = (tt: TentativeTierings) =>
@@ -111,7 +125,7 @@ const continueWalking = (tt: TentativeTierings) =>
 
 const DEFAULT_ID = 'ambient';
 
-const sortStuff = ({ morphisms, objects }: Diagram) => {
+const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
   // Get mappings of object sources and destinations
 
   const sourcesForObjects: SortingStruct = {}; 
@@ -214,7 +228,7 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
 
       for (const tiering of tierings) {
         const filteredNext = tiering.nextToVisit.filter(objId => tiering.tiers[objId] === undefined);
-        if (filteredNext.length === 0) return;
+        if (filteredNext.length === 0) continue;
 
         // Increment longest path
         tiering.longestPath += 1;
@@ -256,10 +270,9 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
   // For each partition, choose the tiering based on the longest path,
   // and assign all objects tiers based on that
 
-  let globalLargestTierSize = 1;
-  let globalSecondLargestTierSize = 0;
+  let globalRowsNeeded = 1;
 
-  const tierings = Object.entries(tentativeTierings).reduce<ActualTierings>((accum, [catId, { tierings: tentative, partitions }]) => {
+  const tierings = Object.entries(tentativeTierings).reduce<ActualTierings>((accum, [catId, { tierings: tentative, partitions }]): ActualTierings => {
     /*
     Recursively assign object tiers as one less than the smallest tier of the objects destinations
     The function will always terminate because it tracks visited objects
@@ -290,44 +303,169 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
       const t = selectedTierings[partitions[obj.id]];
       getAndAssignTier(t, obj.id);
     }
+
+    const partedTierings: Tiering[] = Object.values(selectedTierings).reduce<Tiering[]>((a, tiering) => {
+      let largestTier = Object.values(tiering.tiers)[0];
+      let largestTierSize = 1;
+      let secondLargestTier: number | undefined;
+      let secondLargestTierSize = 0;
+      const objectsByTier: { [tier: number]: string[] } = {};
+
+      for (const [objId, tier] of Object.entries(tiering.tiers)) {
+        if (!objectsByTier[tier]) {
+          objectsByTier[tier] = [objId];
+          continue;
+        }
+        objectsByTier[tier].push(objId);
+        if (objectsByTier[tier].length > largestTierSize) {
+          secondLargestTier = largestTier;
+          secondLargestTierSize = largestTierSize;
+          largestTier = tier;
+          largestTierSize = objectsByTier[tier].length;
+        }
+      }
+      const rowsNeeded = secondLargestTierSize + 1;
+      if (rowsNeeded > globalRowsNeeded) {
+        globalRowsNeeded = rowsNeeded;
+      }
+
+      // TODO: make local placement
+
+      const t: Tiering = {
+        ...tiering,
+        tiersByObject: tiering.tiers,
+        largestTierSize,
+        largestTier,
+        secondLargestTier,
+        objectsByTier,
+        rowsNeeded,
+      };
+
+      return [...a, t];
+    }, []);
     
     return {
       ...accum,
-      [catId]: Object.entries(selectedTierings).reduce<{ [partId: number]: Tiering }>((a, [p, tiering]) => {
-        let largestTierSize = 1;
-        const objectsByTier: { [tier: number]: string[] } = {};
-  
-        for (const [objId, tier] of Object.entries(tiering.tiers)) {
-          if (!objectsByTier[tier]) {
-            objectsByTier[tier] = [objId];
-            continue;
-          }
-          objectsByTier[tier].push(objId);
-          if (objectsByTier[tier].length > largestTierSize) {
-            largestTierSize = objectsByTier[tier].length;
-            if (largestTierSize > globalLargestTierSize) {
-              globalSecondLargestTierSize = globalLargestTierSize;
-              globalLargestTierSize = largestTierSize;
-            }
-          }
-        }
-  
-        return {
-          ...a,
-          [p]: {
-            ...tiering,
-            tiersByObject: tiering.tiers,
-            largestTierSize,
-            objectsByTier,
-          },
-        };
-      }, {}),
+      [catId]: partedTierings,
     };
   }, {});
 
-  const numRows = globalSecondLargestTierSize + 1;
-
   // TODO: assign affinities
+  
+  // Idea: Each object one step from longest path gets a random point on the unit n-sphere
+  // Each object two steps gets the average of affinities of one-steps
+  // Then we need to regress to a line
+
+  // const initPlacements: Placements = {
+  //   objects: {},
+  //   categories: {},
+  //   numRows: (2 * globalRowsNeeded) + 1,
+  //   numCols: 0,
+  // };
+
+
+  // return Object.entries(tierings).reduce(({ objects, categories, numRows, prevNumCols }, [catId, tieringsByPart]) => {
+    
+  //   return {
+  //     objects, categories,
+  //   };
+  // }, initPlacements);
+
+  const numRows = (2 * globalRowsNeeded) - 1;
+  let numCols = 0;
+  const objectPlacements: { [objectId: string]: [number, number] } = {};
+  const categoryPlacements: { [catId: string]: [number, number, number, number] } = {};
+
+  for (const [catId, partedTierings] of Object.entries(tierings)) {
+    let catLeft = Infinity;
+    let catTop = numRows;
+    let catRight = 0;
+    let catBottom = 0;
+
+    for (const { objectsByTier, largestTier, longestPath, secondLargestTier, largestTierSize } of partedTierings) {
+      let localLeft = 0;
+      let localTop = 0;
+      let localRight = 0;
+      let localBottom = 0;
+
+      /** col, row */
+      const localPlacement: { [objectId: string]: [number, number] } = {};
+
+      if (longestPath <= globalRowsNeeded) { 
+        // VERTICAL DIAGRAM
+        localRight = largestTier - 1;
+        localBottom = longestPath - 1;
+        for (let tier = 0; tier < longestPath; tier++) {
+          const tierObjs = objectsByTier[tier];
+          const diffFromLargest = largestTier - tierObjs.length;
+          let tierOffset = (diffFromLargest % 2) === 0 ? diffFromLargest / 2 : (diffFromLargest - 1) / 2;
+          for (const objId of tierObjs) {
+            localPlacement[objId] = [tierOffset, tier];
+            tierOffset += 1;
+          }
+        }
+
+      // globalRowsNeeded is larger than: any partition's second largest tier, or zero
+      // => the previous case always applies for partitions with one tier since the longest path is 1
+      // => this case always has a second-largest tier
+      } else if (largestTierSize > globalRowsNeeded && secondLargestTier !== undefined && secondLargestTier < largestTier) {
+        /*
+        HORIZONTAL DIAGRAM with lower tail
+        Shape:    /
+                 /
+            ____/
+        */
+
+        // Place largest tier
+        let placeCol = 0;
+        for (const objId of objectsByTier[largestTier]) {
+          const placeRow = placeCol + globalRowsNeeded < largestTierSize
+            ? globalRowsNeeded - 1 // We're in the tail
+            : largestTierSize - placeCol - 1; // We're going diagonally
+          localPlacement[objId] = [placeCol, placeRow];
+          placeCol += 1;
+        }
+
+        // available to place
+        let lowerLeftRow = globalRowsNeeded - 2;
+        let lowerLeftCol = 0;
+        let upperRightRow = 0;
+        let upperRightCol = largestTierSize - 2;
+
+        for (let currentTier = largestTier - 1; currentTier >= 0 ; currentTier--) {
+          // TODO place lower tiers
+        }
+
+        // TODO place higher tiers
+
+
+      } else if (largestTierSize > globalRowsNeeded && secondLargestTier && secondLargestTier > largestTier) {
+        /*
+        HORIZONTAL DIAGRAM with UPPER tail
+        Shape:
+          /----
+         /
+        /
+        */
+        let upperRightCol = largestTierSize - 1;
+        let upperLeftCol = largestTierSize - globalRowsNeeded - 1;
+        let lowerLeftCol = 0;
+
+        // TODO
+      } else {
+        // HORIZONTAL DIAGRAM with no tail
+        // TODO
+      }
+      // TODO place globally
+    }
+    // TODO
+  }
+
+  return {
+    numCols, numRows,
+    objects: objectPlacements,
+    categories: categoryPlacements,
+  };
 };
 
 
