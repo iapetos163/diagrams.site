@@ -6,6 +6,13 @@ const isProduction = process.env.ENV?.toLowerCase() === 'production';
 module.exports = {
   entry: './src/index.tsx',
   devtool: 'inline-source-map',
+  devServer: {
+    static: {
+      directory: path.join(__dirname, 'public'),
+    },
+    // compress: true,
+    // port: 9000,
+  },
   module: {
     rules: [
       {
