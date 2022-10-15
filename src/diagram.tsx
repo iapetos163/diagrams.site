@@ -69,7 +69,7 @@ interface FirstTiersByCat {
   };
 }
 
-interface Tiering {
+interface IntermediateTiering {
   tiers: {
     [objectId: string]: number;
   };
@@ -80,10 +80,22 @@ interface Tiering {
 
 interface TentativeTierings {
   [categoryId: string]: {
-    tierings: Tiering[];
+    tierings: IntermediateTiering[];
     partitions: {
       [objectId: string]: number;
     };
+  };
+}
+
+interface Tiering {
+  tiersByObject: {
+    [objectId: string]: number;
+  };
+  longestPath: number;
+  partitionId: number;
+  largestTierSize: number;
+  objectsByTier: {
+    [tierId: number]: string[];
   };
 }
 
@@ -212,7 +224,6 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
           tiering.tiers[objId] = tiering.longestPath;
         }
 
-
         // Determine partition
         // If we discover that two partitions are actually the same,
         // we choose the smallest as the new "actual" partition ID
@@ -245,11 +256,19 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
   // For each partition, choose the tiering based on the longest path,
   // and assign all objects tiers based on that
 
+  let globalLargestTierSize = 1;
+  let globalSecondLargestTierSize = 0;
+
   const tierings = Object.entries(tentativeTierings).reduce<ActualTierings>((accum, [catId, { tierings: tentative, partitions }]) => {
-    // Recursively assign object tiers as one less than the smallest tier of the objects destinations
-    // The function will always terminated because it tracks visited objects
-    // It will never return Infinity if objId is in the same partition - HEY WAIT LOL
-    const getAndAssignTier = (t: Tiering, objId: string, visited = new Set<string>()): number => {
+    /*
+    Recursively assign object tiers as one less than the smallest tier of the objects destinations
+    The function will always terminate because it tracks visited objects
+    If there is a path *to* a tiered object, it will return finite n >= 0
+      n can't be negative as long as the tiering is based on the longest path in the partition
+    If there is a path *from* a tiered object, it should have already been tiered in the graph walk above
+    If there is no path to a tiered object, they must be in separate partitions
+    */
+    const getAndAssignTier = (t: IntermediateTiering, objId: string, visited = new Set<string>()): number => {
       visited.add(objId);
       const assignedTier = t.tiers[objId];
       if (assignedTier !== undefined) return assignedTier;
@@ -262,8 +281,8 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
       return minDestTier - 1;
     };
 
-    const selectedTierings = Object.values(partitions).reduce<{ [partId: number]: Tiering }>((accum, p) => ({
-      ...accum,
+    const selectedTierings = Object.values(partitions).reduce<{ [partId: number]: IntermediateTiering }>((a, p) => ({
+      ...a,
       [p]: tentative.reduce((a, b) => b.partitionId === p && (a.partitionId !== p || b.longestPath > a.longestPath) ? b : a),
     }), {});
 
@@ -274,19 +293,41 @@ const sortStuff = ({ morphisms, objects }: Diagram) => {
     
     return {
       ...accum,
-      [catId]: selectedTierings,
+      [catId]: Object.entries(selectedTierings).reduce<{ [partId: number]: Tiering }>((a, [p, tiering]) => {
+        let largestTierSize = 1;
+        const objectsByTier: { [tier: number]: string[] } = {};
+  
+        for (const [objId, tier] of Object.entries(tiering.tiers)) {
+          if (!objectsByTier[tier]) {
+            objectsByTier[tier] = [objId];
+            continue;
+          }
+          objectsByTier[tier].push(objId);
+          if (objectsByTier[tier].length > largestTierSize) {
+            largestTierSize = objectsByTier[tier].length;
+            if (largestTierSize > globalLargestTierSize) {
+              globalSecondLargestTierSize = globalLargestTierSize;
+              globalLargestTierSize = largestTierSize;
+            }
+          }
+        }
+  
+        return {
+          ...a,
+          [p]: {
+            ...tiering,
+            tiersByObject: tiering.tiers,
+            largestTierSize,
+            objectsByTier,
+          },
+        };
+      }, {}),
     };
   }, {});
 
-  const numRows = secondLargestTierSize + 1;
+  const numRows = globalSecondLargestTierSize + 1;
 
-  /*
-
-  -Y-X
-  Y-X-
-  XX--
-
-  */
+  // TODO: assign affinities
 };
 
 
