@@ -105,7 +105,7 @@ const App = () => {
     <>
       <a href="https://example.com" target="_blank" rel="noreferrer"></a>
       <h1>
-        <ControlledColor {...{ pctHue, pctSat }}></ControlledColor>diagrams.site
+        <ControlledColor {...{ pctHue, pctSat }}>diagrams.site</ControlledColor>
       </h1>
       <input
         type="range"
