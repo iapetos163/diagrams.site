@@ -31,7 +31,7 @@ export const getObjectAdjacencies = (
 
     if (!dests[catId]) {
       dests[catId] = { [sourceId]: [destId] };
-    } else if (!dests[catId][destId]) {
+    } else if (!dests[catId][sourceId]) {
       dests[catId][sourceId] = [destId];
     } else {
       dests[catId][sourceId].push(destId);
