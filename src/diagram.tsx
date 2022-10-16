@@ -97,7 +97,7 @@ interface Tiering {
   longestPath: number;
   partitionId: number;
   largestTier: number;
-  secondLargestTier: number | undefined;
+  // secondLargestTier: number | undefined;
   largestTierSize: number;
   rowsNeeded: number;
 }
@@ -107,12 +107,12 @@ interface ActualTierings {
 }
 
 interface Placements {
+  /** column, row */
   objects: {
-    /** column, row */
     [objectId: string]: [number, number];
   };
+  /** left, top, right, bottom */
   categories: {
-    /** left, top, right, bottom */
     [categoryId: string]: [number, number, number, number];
   };
   numRows: number;
@@ -125,7 +125,7 @@ const continueWalking = (tt: TentativeTierings) =>
 
 const DEFAULT_ID = 'ambient';
 
-const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
+export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
   // Get mappings of object sources and destinations
 
   const sourcesForObjects: SortingStruct = {}; 
@@ -307,8 +307,8 @@ const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
     const partedTierings: Tiering[] = Object.values(selectedTierings).reduce<Tiering[]>((a, tiering) => {
       let largestTier = Object.values(tiering.tiers)[0];
       let largestTierSize = 1;
-      let secondLargestTier: number | undefined;
-      let secondLargestTierSize = 0;
+      // let secondLargestTier: number | undefined;
+      // let secondLargestTierSize = 0;
       const objectsByTier: { [tier: number]: string[] } = {};
 
       for (const [objId, tier] of Object.entries(tiering.tiers)) {
@@ -318,13 +318,13 @@ const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
         }
         objectsByTier[tier].push(objId);
         if (objectsByTier[tier].length > largestTierSize) {
-          secondLargestTier = largestTier;
-          secondLargestTierSize = largestTierSize;
+          // secondLargestTier = largestTier;
+          // secondLargestTierSize = largestTierSize;
           largestTier = tier;
           largestTierSize = objectsByTier[tier].length;
         }
       }
-      const rowsNeeded = secondLargestTierSize + 1;
+      const rowsNeeded = largestTierSize; // secondLargestTierSize + 1;
       if (rowsNeeded > globalRowsNeeded) {
         globalRowsNeeded = rowsNeeded;
       }
@@ -336,7 +336,7 @@ const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
         tiersByObject: tiering.tiers,
         largestTierSize,
         largestTier,
-        secondLargestTier,
+        // secondLargestTier,
         objectsByTier,
         rowsNeeded,
       };
@@ -356,109 +356,81 @@ const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
   // Each object two steps gets the average of affinities of one-steps
   // Then we need to regress to a line
 
-  // const initPlacements: Placements = {
-  //   objects: {},
-  //   categories: {},
-  //   numRows: (2 * globalRowsNeeded) + 1,
-  //   numCols: 0,
-  // };
-
-
-  // return Object.entries(tierings).reduce(({ objects, categories, numRows, prevNumCols }, [catId, tieringsByPart]) => {
-    
-  //   return {
-  //     objects, categories,
-  //   };
-  // }, initPlacements);
-
   const numRows = (2 * globalRowsNeeded) - 1;
   let numCols = 0;
+  /** col, row */
   const objectPlacements: { [objectId: string]: [number, number] } = {};
+  /** left, top, right, bottom */
   const categoryPlacements: { [catId: string]: [number, number, number, number] } = {};
 
   for (const [catId, partedTierings] of Object.entries(tierings)) {
-    let catLeft = Infinity;
+    const catLeft = numCols;
     let catTop = numRows;
     let catRight = 0;
     let catBottom = 0;
 
-    for (const { objectsByTier, largestTier, longestPath, secondLargestTier, largestTierSize } of partedTierings) {
+    for (const { objectsByTier, largestTier, largestTierSize, longestPath, rowsNeeded } of partedTierings) {
+      // Local tops always = 0
       let localLeft = 0;
-      let localTop = 0;
-      let localRight = 0;
-      let localBottom = 0;
+      let localRight = largestTier - 1;
+      let localBottom = rowsNeeded - 1;
 
+      // TODO: make into array of objects
       /** col, row */
       const localPlacement: { [objectId: string]: [number, number] } = {};
 
       if (longestPath <= globalRowsNeeded) { 
         // VERTICAL DIAGRAM
-        localRight = largestTier - 1;
         localBottom = longestPath - 1;
         for (let tier = 0; tier < longestPath; tier++) {
           const tierObjs = objectsByTier[tier];
-          const diffFromLargest = largestTier - tierObjs.length;
+          const diffFromLargest = largestTierSize - tierObjs.length;
           let tierOffset = (diffFromLargest % 2) === 0 ? diffFromLargest / 2 : (diffFromLargest - 1) / 2;
           for (const objId of tierObjs) {
             localPlacement[objId] = [tierOffset, tier];
             tierOffset += 1;
           }
         }
-
-      // globalRowsNeeded is larger than: any partition's second largest tier, or zero
-      // => the previous case always applies for partitions with one tier since the longest path is 1
-      // => this case always has a second-largest tier
-      } else if (largestTierSize > globalRowsNeeded && secondLargestTier !== undefined && secondLargestTier < largestTier) {
-        /*
-        HORIZONTAL DIAGRAM with lower tail
-        Shape:    /
-                 /
-            ____/
-        */
-
-        // Place largest tier
-        let placeCol = 0;
-        for (const objId of objectsByTier[largestTier]) {
-          const placeRow = placeCol + globalRowsNeeded < largestTierSize
-            ? globalRowsNeeded - 1 // We're in the tail
-            : largestTierSize - placeCol - 1; // We're going diagonally
-          localPlacement[objId] = [placeCol, placeRow];
-          placeCol += 1;
-        }
-
-        // available to place
-        let lowerLeftRow = globalRowsNeeded - 2;
-        let lowerLeftCol = 0;
-        let upperRightRow = 0;
-        let upperRightCol = largestTierSize - 2;
-
-        for (let currentTier = largestTier - 1; currentTier >= 0 ; currentTier--) {
-          // TODO place lower tiers
-        }
-
-        // TODO place higher tiers
-
-
-      } else if (largestTierSize > globalRowsNeeded && secondLargestTier && secondLargestTier > largestTier) {
-        /*
-        HORIZONTAL DIAGRAM with UPPER tail
-        Shape:
-          /----
-         /
-        /
-        */
-        let upperRightCol = largestTierSize - 1;
-        let upperLeftCol = largestTierSize - globalRowsNeeded - 1;
-        let lowerLeftCol = 0;
-
-        // TODO
       } else {
-        // HORIZONTAL DIAGRAM with no tail
-        // TODO
+        // HORIZONTAL DIAGRAM
+        for (let tier = 0; tier < longestPath; tier++) {
+          const tierObjs = objectsByTier[tier];
+          const diffFromLargest = largestTierSize - tierObjs.length;
+          const tierOffset = (diffFromLargest % 2) === 0 ? diffFromLargest / 2 : (diffFromLargest - 1) / 2;
+          let placeCol = tier - largestTier + tierOffset;
+          let placeRow = rowsNeeded - tierOffset - 1;
+          if (localLeft > placeCol) {
+            localLeft = placeCol;
+          }
+          for (const objId of tierObjs) {
+            localPlacement[objId] = [placeCol, placeRow];
+            placeCol += 1;
+            placeRow -= 1;
+          }
+          if (localRight < placeCol) {
+            localRight = placeCol;
+          }
+        }
       }
-      // TODO place globally
+
+      // Place globally
+      const globalPlaceRow = globalRowsNeeded - localBottom - 1;
+      for (const [objectId, [localCol, localRow]] of Object.entries(localPlacement)) {
+        objectPlacements[objectId] = [numCols + localCol - localLeft, globalPlaceRow + (2 * localRow)];
+      }
+      numCols += localRight - localLeft + 1;
+
+      // Increment cat bounds
+      catRight = numCols - 1;
+      if (globalPlaceRow < catTop) {
+        catTop = globalPlaceRow;
+      }
+      const t = globalRowsNeeded + localBottom + 1;
+      if (t > catBottom) {
+        catBottom = t;
+      }
     }
-    // TODO
+    categoryPlacements[catId] = [catLeft, catTop, catRight, catBottom];
   }
 
   return {
