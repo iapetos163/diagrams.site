@@ -1,6 +1,7 @@
-import { css } from '@emotion/css';
 import React, { useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
+import styled from 'styled-components';
+import { Diagram, RenderedDiagram } from './diagram';
 
 /*
 GIVEN OBJ 50% SAT 1 HUE
@@ -39,27 +40,72 @@ const absSatAndValue = (absHueDeg: number, relSat: number): [number, number] => 
 const formatDeg = (pct: number) => `${Math.round(pct * 3.5)}deg`;
 const formatPct = (pct: number) => `${Math.round(pct * 100)}%`;
 
+const sampleDiagram: Diagram = {
+  id: 'sample',
+  objects: [{
+    id: 'a',
+    name: 'A',
+    quantification: 'GIVEN',
+  }, {
+    id: 'b',
+    name: 'B',
+    quantification: 'GIVEN',
+  }, {
+    id: 'c',
+    name: 'C',
+    quantification: 'GIVEN',
+  }, {
+    id: 'd',
+    name: 'D',
+    quantification: 'GIVEN',
+  }],
+  morphisms: [{
+    id: 'ab',
+    quantification: 'GIVEN',
+    sourceId: 'a',
+    destId: 'b',
+  }, {
+    id: 'bd',
+    quantification: 'GIVEN',
+    sourceId: 'b',
+    destId: 'd',
+  }, {
+    id: 'ac',
+    quantification: 'GIVEN',
+    sourceId: 'a',
+    destId: 'c',
+  }, {
+    id: 'cd',
+    quantification: 'GIVEN',
+    sourceId: 'c',
+    destId: 'd',
+  }],
+  categories: [],
+  functors: [],
+  functorMappings: [],
+};
+
 const App = () => {
   const [pctHue, setPctHue] = useState(0);
   const [pctSat, setPctSat] = useState(100);
 
-  const controlledColor = useMemo(() => {
-    const [sat, val] = absSatAndValue(pctHue * 3.6, pctSat / 100);
-
-    return css`
-      color: hsl(${formatDeg(pctHue)}, ${formatPct(sat)}, ${formatPct(val / 2)});
-    `;
-  }, [ pctHue, pctSat]);
-
   return(
     <>
-      <h1 className={controlledColor}>diagrams.site</h1>
+      <h1><ControlledColor {...{ pctHue, pctSat }}></ControlledColor>diagrams.site</h1>
       <input type="range" value={pctHue} onChange={e => setPctHue(e.target.valueAsNumber)}></input>
       <input type="range" value={pctSat} onChange={e => setPctSat(e.target.valueAsNumber)}></input>
+      <RenderedDiagram diagram={sampleDiagram} />
       <textarea></textarea>
     </>
   );
 };
+
+const ControlledColor = styled.span<{ pctHue: number; pctSat: number }>`
+  ${({ pctHue, pctSat }) => {
+    const [sat, val] = absSatAndValue(pctHue * 3.6, pctSat / 100);
+    return `color: hsl(${formatDeg(pctHue)}, ${formatPct(sat)}, ${formatPct(val / 2)})`;
+  }}
+`;
 
 ReactDOM.render(
   <App />,

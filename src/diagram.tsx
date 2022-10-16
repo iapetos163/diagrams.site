@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import styled from 'styled-components';
 import { getPlacements } from './placement';
 
 export type Quantification = 'GIVEN' | 'EXISTS' | 'FORALL' | 'UNIQUE';
@@ -23,7 +24,8 @@ export interface Morphism {
   quantification: Quantification;
   sourceId: string;
   destId: string;
-  categoryId: string;
+  /** Required if in diagram with categories.length > 0 */
+  categoryId?: string;
   property?: MorphismProperty;
 }
 
@@ -57,11 +59,19 @@ export interface RenderedDiagramProps {
   diagram: Diagram;
 }
 
+const height = 640;
+const width = 960;
+
 export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({ diagram }) => {
   const placements = useMemo(() => getPlacements(diagram), [diagram]);
 
   return (
-    <svg>
-    </svg>
+    <StyledDiagram {...{ width, height }}>
+    </StyledDiagram>
   );
 };
+
+const StyledDiagram = styled.svg<{ width: number; height: number }>`
+  width: ${({ width }) => width}px;
+  height: ${({ height }) => height}px;
+`;
