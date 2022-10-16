@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
 import { Diagram, RenderedDiagram } from './diagram';
 
@@ -21,7 +21,7 @@ const smoothstep = (x: number) => 3 * x * x - 2 * x * x * x;
 
 const absSatAndValue = (
   absHueDeg: number,
-  relSat: number
+  relSat: number,
 ): [number, number] => {
   let maxSat = 1;
   if (absHueDeg <= 60) {
@@ -124,12 +124,13 @@ const App = () => {
 };
 
 const ControlledColor = styled.span<{ pctHue: number; pctSat: number }>`
-  ${({ pctHue, pctSat }) => {
+  color: ${({ pctHue, pctSat }) => {
     const [sat, val] = absSatAndValue(pctHue * 3.6, pctSat / 100);
-    return `color: hsl(${formatDeg(pctHue)}, ${formatPct(sat)}, ${formatPct(
-      val / 2
-    )})`;
-  }}
+    return `hsl(${[formatDeg(pctHue), formatPct(sat), formatPct(val / 2)].join(
+      ', ',
+    )}`;
+  }};
 `;
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root')!);
+root.render(<App />);
