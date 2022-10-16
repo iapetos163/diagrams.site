@@ -128,7 +128,7 @@ const ControlledColor = styled.span<{ pctHue: number; pctSat: number }>`
     const [sat, val] = absSatAndValue(pctHue * 3.6, pctSat / 100);
     return `hsl(${[formatDeg(pctHue), formatPct(sat), formatPct(val / 2)].join(
       ', ',
-    )}`;
+    )})`;
   }};
 `;
 
