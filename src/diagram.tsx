@@ -93,7 +93,7 @@ export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
             key={obj.id}
             cx={colToX(col)}
             cy={rowToY(row)}
-            radius={objRadius}
+            r={objRadius}
           />
         );
       })}
