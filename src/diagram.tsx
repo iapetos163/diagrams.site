@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { getPlacements } from './placement';
 
@@ -62,13 +62,25 @@ export interface RenderedDiagramProps {
 const height = 640;
 const width = 960;
 
-export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({ diagram }) => {
-  const placements = useMemo(() => getPlacements(diagram), [diagram]);
+export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
+  diagram,
+}) => {
+  const {
+    numCols,
+    numRows,
+    objects: objPlacements,
+  } = useMemo(() => getPlacements(diagram), [diagram]);
 
-  return (
-    <StyledDiagram {...{ width, height }}>
-    </StyledDiagram>
+  const colToX = useCallback(
+    (col: number) => ((col + 1) * width) / (numCols + 1),
+    [numCols],
   );
+  const rowToY = useCallback(
+    (row: number) => ((row + 1) * height) / (numRows + 1),
+    [numRows],
+  );
+
+  return <StyledDiagram {...{ width, height }}></StyledDiagram>;
 };
 
 const StyledDiagram = styled.svg<{ width: number; height: number }>`

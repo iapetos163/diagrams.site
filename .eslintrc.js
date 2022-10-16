@@ -1,7 +1,7 @@
 module.exports = {
-  extends: ['eslint:recommended', 'birbcore'],
+  extends: ['eslint:recommended', 'birbcore/react'],
   ignorePatterns: ['/*.js'],
   env: {
-    browser: true
-  }
+    browser: true,
+  },
 };
