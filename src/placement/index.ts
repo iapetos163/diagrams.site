@@ -117,6 +117,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
     accum[catId].objects.push(obj);
     return accum;
   }, {});
+  console.debug('firstTierObjects', firstTierObjects);
 
   // For each candidate tier-0 object, find the longest path.
   // While we're at it, determine how objects are partitioned
@@ -135,7 +136,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
             [firstObj.id]: 0,
           },
           longestPath: 0,
-          nextToVisit: [firstObj.id],
+          nextToVisit: destsForObjects[catId][firstObj.id],
         })),
         partitions: firstTier.objects.reduce(
           (accum, obj, i) => ({
@@ -209,6 +210,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
       }
     }
   }
+  console.debug('tentativeTierings', tentativeTierings);
 
   // For each partition, choose the tiering based on the longest path,
   // and assign all objects tiers based on that
@@ -332,7 +334,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
     });
     if (longestPath <= globalRowsNeeded) {
       // VERTICAL DIAGRAM
-      for (let tier = 0; tier < longestPath; tier++) {
+      for (let tier = 0; tier <= longestPath; tier++) {
         const tierObjs = objectsByTier[tier];
         const diffFromLargest = largestTierSize - tierObjs.length;
         let tierOffset =
@@ -359,7 +361,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
     let left = 0;
     let right = largestTier - 1;
 
-    for (let tier = 0; tier < longestPath; tier++) {
+    for (let tier = 0; tier <= longestPath; tier++) {
       const tierObjs = objectsByTier[tier];
       console.debug('tierObjs', tierObjs);
       const diffFromLargest = largestTierSize - tierObjs.length;

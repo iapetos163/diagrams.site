@@ -85,7 +85,7 @@ export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
   // const objRadius = useMemo(() => height / (2 * (numRows + 1)), [height, numRows])
 
   return (
-    <StyledDiagram viewBox={`"0 0 ${width} ${height}`} {...{ width, height }}>
+    <StyledDiagram viewBox={`0 0 ${width} ${height}`} {...{ width, height }}>
       {diagram.objects.map((obj) => {
         const [col, row] = objPlacements[obj.id];
         return (
