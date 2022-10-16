@@ -61,6 +61,7 @@ export interface RenderedDiagramProps {
 
 const height = 640;
 const width = 960;
+const objRadius = 10;
 
 export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
   diagram,
@@ -80,10 +81,29 @@ export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
     [numRows],
   );
 
-  return <StyledDiagram {...{ width, height }}></StyledDiagram>;
+  // TODO: handle extremely crowded diagrams
+  // const objRadius = useMemo(() => height / (2 * (numRows + 1)), [height, numRows])
+
+  return (
+    <StyledDiagram viewBox={`"0 0 ${width} ${height}`} {...{ width, height }}>
+      {diagram.objects.map((obj) => {
+        const [col, row] = objPlacements[obj.id];
+        return (
+          <circle
+            key={obj.id}
+            cx={colToX(col)}
+            cy={rowToY(row)}
+            radius={objRadius}
+          />
+        );
+      })}
+    </StyledDiagram>
+  );
 };
 
 const StyledDiagram = styled.svg<{ width: number; height: number }>`
   width: ${({ width }) => width}px;
   height: ${({ height }) => height}px;
+  fill: black;
+  background-color: white;
 `;
