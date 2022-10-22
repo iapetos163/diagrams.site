@@ -332,7 +332,7 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
       longestPath,
       objectsByTier,
     });
-    if (longestPath <= globalRowsNeeded) {
+    if (longestPath < globalRowsNeeded) {
       // VERTICAL DIAGRAM
       for (let tier = 0; tier <= longestPath; tier++) {
         const tierObjs = objectsByTier[tier];
@@ -365,10 +365,15 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
       const tierObjs = objectsByTier[tier];
       console.debug('tierObjs', tierObjs);
       const diffFromLargest = largestTierSize - tierObjs.length;
-      const tierOffset =
+
+      const naiveOffset =
         diffFromLargest % 2 === 0
           ? diffFromLargest / 2
           : (diffFromLargest - 1) / 2;
+      const tierOffset =
+        tier < largestTier
+          ? Math.max(naiveOffset, diffFromLargest - tier)
+          : Math.min(naiveOffset, longestPath - tier);
       let placeCol = tier - largestTier + tierOffset;
       let placeRow = largestTierSize - tierOffset - 1;
       if (left > placeCol) {
@@ -383,9 +388,10 @@ export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
         placeCol += 1;
         placeRow -= 1;
       }
-      if (right < placeCol) {
-        right = placeCol;
+      if (right < placeCol - 1) {
+        right = placeCol - 1;
       }
+      console.debug({ right, placeCol, tier });
     }
 
     return {

@@ -59,9 +59,9 @@ export interface RenderedDiagramProps {
   diagram: Diagram;
 }
 
-const height = 640;
-const width = 960;
 const objRadius = 10;
+const colSize = 200;
+const rowSize = 100;
 
 export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
   diagram,
@@ -72,17 +72,19 @@ export const RenderedDiagram: React.FC<RenderedDiagramProps> = ({
     objects: objPlacements,
   } = useMemo(() => getPlacements(diagram), [diagram]);
 
-  const colToX = useCallback(
-    (col: number) => ((col + 1) * width) / (numCols + 1),
-    [numCols],
-  );
-  const rowToY = useCallback(
-    (row: number) => ((row + 1) * height) / (numRows + 1),
-    [numRows],
-  );
+  const width = useMemo(() => numCols * colSize, [numCols]);
+  const height = useMemo(() => (numRows + 1) * rowSize, [numRows]);
 
-  // TODO: handle extremely crowded diagrams
-  // const objRadius = useMemo(() => height / (2 * (numRows + 1)), [height, numRows])
+  // const colToX = useCallback(
+  //   (col: number) => ((col + 1) * width) / (numCols + 1),
+  //   [numCols],
+  // );
+  // const rowToY = useCallback(
+  //   (row: number) => ((row + 1) * height) / (numRows + 1),
+  //   [numRows],
+  // );
+  const colToX = useCallback((col: number) => (0.5 + col) * colSize, []);
+  const rowToY = useCallback((row: number) => (1 + row) * rowSize, []);
 
   return (
     <StyledDiagram viewBox={`0 0 ${width} ${height}`} {...{ width, height }}>
