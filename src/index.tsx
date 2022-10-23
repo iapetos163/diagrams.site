@@ -87,7 +87,7 @@ const App = () => {
         value={pctSat}
         onChange={(e) => setPctSat(e.target.valueAsNumber)}
       ></input> */}
-      <Diagram model={sampleDiagram} colorScheme={colorScheme} width={800} />
+      <Diagram model={sampleDiagram} colorScheme={colorScheme} />
       <textarea></textarea>
     </>
   );
