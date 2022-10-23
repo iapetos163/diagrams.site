@@ -185,13 +185,14 @@ const StyledDiagram = styled.div<{ width: number; height: number }>`
   width: ${({ width }) => width}px;
   height: ${({ height }) => height}px;
   position: relative;
+  font-weight: bold;
   > div {
     position: absolute;
     text-align: center;
   }
   > svg {
     circle {
-      stroke-width: 2px;
+      stroke-width: 2;
     }
   }
 `;

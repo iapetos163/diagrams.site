@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { makeColor, makeColorScheme } from './color';
 import Diagram from './Diagram';
 import { DiagramModel } from './diagram-model';
+import './style.css';
 
 const sampleDiagram: DiagramModel = {
   id: 'sample',
