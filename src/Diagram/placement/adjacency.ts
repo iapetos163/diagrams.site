@@ -1,5 +1,5 @@
 import { DEFAULT_ID } from '.';
-import { Morphism, Obj } from '../diagram';
+import { Morphism, Obj } from '../../diagram-model';
 
 type Adjacencies = {
   [categoryId: string]: {

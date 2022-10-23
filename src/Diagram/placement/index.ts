@@ -1,4 +1,4 @@
-import { Obj, Diagram } from '../diagram';
+import { Obj, DiagramModel } from '../../diagram-model';
 import { getObjectAdjacencies } from './adjacency';
 
 interface FirstTiersByCat {
@@ -69,7 +69,10 @@ const continueWalking = (tt: TentativeTierings[]) =>
 
 export const DEFAULT_ID = 'ambient';
 
-export const getPlacements = ({ morphisms, objects }: Diagram): Placements => {
+export const getPlacements = ({
+  morphisms,
+  objects,
+}: DiagramModel): Placements => {
   // Get mappings of object sources and destinations
   const { sources: sourcesForObjects, destinations: destsForObjects } =
     getObjectAdjacencies(objects, morphisms);

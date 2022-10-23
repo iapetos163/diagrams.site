@@ -1,6 +1,6 @@
 import { getObjectAdjacencies } from './adjacency';
 import { DEFAULT_ID } from '.';
-import { Morphism, Obj } from '../diagram';
+import { Morphism, Obj } from '../../diagram-model';
 
 const objects: Obj[] = [
   {

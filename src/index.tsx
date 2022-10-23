@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
-import { Diagram, RenderedDiagram } from './diagram';
+import Diagram from './Diagram';
+import { DiagramModel } from './diagram-model';
 
 /*
 GIVEN OBJ 50% SAT 1 HUE
@@ -42,7 +43,7 @@ const absSatAndValue = (
 const formatDeg = (pct: number) => `${Math.round(pct * 3.5)}deg`;
 const formatPct = (pct: number) => `${Math.round(pct * 100)}%`;
 
-const sampleDiagram: Diagram = {
+const sampleDiagram: DiagramModel = {
   id: 'sample',
   objects: [
     {
@@ -117,7 +118,7 @@ const App = () => {
         value={pctSat}
         onChange={(e) => setPctSat(e.target.valueAsNumber)}
       ></input>
-      <RenderedDiagram diagram={sampleDiagram} />
+      <Diagram model={sampleDiagram} />
       <textarea></textarea>
     </>
   );
