@@ -31,7 +31,7 @@ const smoothstep = (x: number) => 3 * x * x - 2 * x * x * x;
 const formatDeg = (pct: number) => `${Math.round(pct * 3.5)}deg`;
 const formatPct = (pct: number) => `${Math.round(pct * 100)}%`;
 
-const absSatAndValue = (
+const darkAbsSatAndValue = (
   absHueDeg: number,
   relSat: number,
 ): [number, number] => {
@@ -51,13 +51,31 @@ const absSatAndValue = (
   return [absSat, absValue];
 };
 
+const brightAbsSatAndValue = (relSat: number): [number, number] => {
+  const absSat = (0.9 * (1 + relSat)) / 2;
+
+  const absValue = 0.9;
+
+  return [absSat, absValue];
+};
+
 export const makeColor = (absHueDeg: number, relSat: number): ColorPair => {
-  const [sat, val] = absSatAndValue(absHueDeg, relSat);
-  const hsl = [`${absHueDeg}deg`, formatPct(sat), formatPct(val / 2)];
+  const [darkSat, darkVal] = darkAbsSatAndValue(absHueDeg, relSat);
+  const darkHsl = [
+    `${absHueDeg}deg`,
+    formatPct(darkSat),
+    formatPct(darkVal / 2),
+  ];
+  const [brightSat, brightVal] = brightAbsSatAndValue(relSat);
+  const brightHsl = [
+    `${Math.round(absHueDeg)}deg`,
+    formatPct(brightSat),
+    formatPct(brightVal / 2),
+  ];
 
   return {
-    dark: `hsl(${hsl.join(', ')})`,
-    bright: 'red',
+    dark: `hsl(${darkHsl.join(', ')})`,
+    bright: `hsl(${brightHsl.join(', ')})`,
   };
 };
 

@@ -72,9 +72,10 @@ const App = () => {
 
   return (
     <>
-      <h1>
-        <ControlledColor {...{ pctHue, pctSat }}>diagrams.site</ControlledColor>
-      </h1>
+      <h1>diagrams.site</h1>
+      <ControlledColor {...{ pctHue, pctSat }}>
+        <div style={{ width: 100, height: 200 }} />
+      </ControlledColor>
       <input
         type="range"
         value={pctHue}
@@ -91,8 +92,9 @@ const App = () => {
   );
 };
 
-const ControlledColor = styled.span<{ pctHue: number; pctSat: number }>`
-  color: ${({ pctHue, pctSat }) => makeColor(pctHue * 3.6, pctSat / 100).dark};
+const ControlledColor = styled.div<{ pctHue: number; pctSat: number }>`
+  background-color: ${({ pctHue, pctSat }) =>
+    makeColor(pctHue * 3.6, pctSat / 100).bright};
 `;
 
 const root = createRoot(document.getElementById('root')!);
