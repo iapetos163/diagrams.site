@@ -90,7 +90,7 @@ export const Diagram: React.FC<DiagramProps> = ({
         {model.morphisms.map((morphism) => {
           const [srcCol, srcRow] = objPlacements[morphism.sourceId];
           const [destCol, destRow] = objPlacements[morphism.destId];
-          const { dx, dy, length } = arrowPlacements[morphism.id];
+          const { dx, dy, length, angle } = arrowPlacements[morphism.id];
           const srcOffsetLength = arrowOffsetRatio * objRadius;
           const destOffsetLength =
             arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
@@ -107,23 +107,32 @@ export const Diagram: React.FC<DiagramProps> = ({
             rowToY(destRow) -
             (destOffsetLength * dy * rowSize) / (length * rowSize);
 
-          const style: HTMLAttributes<SVGLineElement>['style'] = {
-            strokeWidth: arrowWidth,
-          };
+          let color: string | undefined;
           if (colorScheme) {
-            style.stroke = colorScheme.morphisms[morphism.id].dark;
+            color = colorScheme.morphisms[morphism.id].dark;
           }
 
           return (
-            <line
+            <StyledArrow
+              arrowColor={color}
+              arrowWidth={arrowWidth}
               key={morphism.id}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              style={style}
-              markerEnd="url(#arrow)"
-            />
+            >
+              <line
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                // markerEnd="url(#arrow)"
+              />
+              <g transform={`translate(${x2}, ${y2})`}>
+                <g transform={`rotate(${(angle * 180) / Math.PI})`}>
+                  <g transform={`scale(${(markerSize * arrowWidth) / 10})`}>
+                    <path d="M -5 -5 L 5 0 L -5 5 z" />
+                  </g>
+                </g>
+              </g>
+            </StyledArrow>
           );
         })}
       </svg>
@@ -196,13 +205,18 @@ const StyledDiagram = styled.div<{ width: number; height: number }>`
   width: ${({ width }) => width}px;
   height: ${({ height }) => height}px;
   position: relative;
-  > svg {
-    line {
-      stroke: black;
-    }
-  }
   > div {
     position: absolute;
     text-align: center;
+  }
+`;
+
+const StyledArrow = styled.g<{ arrowColor?: string; arrowWidth: number }>`
+  line {
+    stroke-width: ${arrowWidth};
+    stroke: ${({ arrowColor = 'black' }) => arrowColor};
+  }
+  path {
+    fill: ${({ arrowColor = 'black' }) => arrowColor};
   }
 `;

@@ -464,7 +464,9 @@ export const getPlacements = ({
       const dx = destCol - srcCol;
       const dy = (destRow - srcRow) / 2;
       const length = Math.sqrt(dx * dx + dy * dy);
-      const angle = Math.tan(dy / dx);
+      const angle = Math.atan(dy / dx);
+
+      console.debug({ dy, dx, ratio: dy / dx, angle });
 
       return {
         ...accum,
