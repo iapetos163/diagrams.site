@@ -71,24 +71,28 @@ const sampleDiagram: DiagramModel = {
     {
       id: 'ab',
       quantification: 'GIVEN',
+      name: '$\\alpha$',
       sourceId: 'a',
       destId: 'b',
     },
     {
       id: 'bd',
       quantification: 'GIVEN',
+      name: '$\\beta$',
       sourceId: 'b',
       destId: 'd',
     },
     {
       id: 'ac',
       quantification: 'GIVEN',
+      name: '$\\gamma$',
       sourceId: 'a',
       destId: 'c',
     },
     {
       id: 'cd',
       quantification: 'GIVEN',
+      name: '$\\delta$',
       sourceId: 'c',
       destId: 'd',
     },

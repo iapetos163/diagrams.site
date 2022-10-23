@@ -1,6 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { HTMLAttributes, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
 import { DiagramModel } from '../diagram-model';
+import DiagramLabel from './DiagramLabel';
 import { getPlacements } from './placement';
 
 export interface DiagramProps {
@@ -15,8 +16,8 @@ const objRadius = 10;
 const arrowWidth = 5;
 const colSize = 200;
 const rowSize = 100;
-const arrowOffsetRatio = 1.2;
-const markerSize = 5;
+const arrowOffsetRatio = 1.3;
+const markerSize = 4;
 
 export const Diagram: React.FC<DiagramProps> = ({
   model,
@@ -68,59 +69,104 @@ export const Diagram: React.FC<DiagramProps> = ({
   );
 
   return (
-    <StyledDiagram
-      viewBox={`0 0 ${viewWidth} ${viewHeight}`}
-      {...{ width, height }}
-    >
-      <defs>
-        <marker
-          id="arrow"
-          viewBox="0 0 10 10"
-          refX="5"
-          refY="5"
-          markerWidth={markerSize}
-          markerHeight={markerSize}
-          orient="auto-start-reverse"
-        >
-          <path d="M 0 0 L 10 5 L 0 10 z" />
-        </marker>
-      </defs>
+    <StyledDiagram {...{ width, height }}>
+      <svg viewBox={`0 0 ${viewWidth} ${viewHeight}`}>
+        <defs>
+          <marker
+            id="arrow"
+            viewBox="0 0 10 10"
+            refX="5"
+            refY="5"
+            markerWidth={markerSize}
+            markerHeight={markerSize}
+            orient="auto-start-reverse"
+          >
+            <path d="M 0 0 L 10 5 L 0 10 z" />
+          </marker>
+        </defs>
 
-      {model.morphisms.map((morphism) => {
-        const [srcCol, srcRow] = objPlacements[morphism.sourceId];
-        const [destCol, destRow] = objPlacements[morphism.destId];
-        const { dx, dy, length } = arrowOffsets[morphism.id];
-        const srcOffsetLength = arrowOffsetRatio * objRadius;
-        const destOffsetLength =
-          arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
-        const x1 = colToX(srcCol) + (srcOffsetLength * dx) / length;
-        const y1 = rowToY(srcRow) + (srcOffsetLength * dy) / length;
-        const x2 = colToX(destCol) - (destOffsetLength * dx) / length;
-        const y2 = rowToY(destRow) - (destOffsetLength * dy) / length;
+        {model.objects.map((obj) => {
+          const [col, row] = objPlacements[obj.id];
+          return (
+            <circle
+              key={obj.id}
+              cx={colToX(col)}
+              cy={rowToY(row)}
+              r={objRadius}
+            />
+          );
+        })}
+        {model.morphisms.map((morphism) => {
+          const [srcCol, srcRow] = objPlacements[morphism.sourceId];
+          const [destCol, destRow] = objPlacements[morphism.destId];
+          const { dx, dy, length } = arrowOffsets[morphism.id];
+          const srcOffsetLength = arrowOffsetRatio * objRadius;
+          const destOffsetLength =
+            arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
+          const x1 = colToX(srcCol) + (srcOffsetLength * dx) / length;
+          const y1 = rowToY(srcRow) + (srcOffsetLength * dy) / length;
+          const x2 = colToX(destCol) - (destOffsetLength * dx) / length;
+          const y2 = rowToY(destRow) - (destOffsetLength * dy) / length;
 
-        return (
-          <line
-            key={morphism.id}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            strokeWidth={arrowWidth}
-            fill="none"
-            stroke="black"
-            markerEnd="url(#arrow)"
-          />
-        );
-      })}
+          return (
+            <line
+              key={morphism.id}
+              x1={x1}
+              y1={y1}
+              x2={x2}
+              y2={y2}
+              strokeWidth={arrowWidth}
+              fill="none"
+              stroke="black"
+              markerEnd="url(#arrow)"
+            />
+          );
+        })}
+      </svg>
       {model.objects.map((obj) => {
+        if (!obj.name) return null;
         const [col, row] = objPlacements[obj.id];
         return (
-          <circle
+          <div
             key={obj.id}
-            cx={colToX(col)}
-            cy={rowToY(row)}
-            r={objRadius}
-          />
+            style={{
+              right: width - colToX(col) + objRadius,
+              bottom: height - rowToY(row) + objRadius,
+            }}
+          >
+            <DiagramLabel text={obj.name} />
+          </div>
+        );
+      })}
+      {model.morphisms.map((morphism) => {
+        if (!morphism.name) return null;
+        const [srcCol, srcRow] = objPlacements[morphism.sourceId];
+        // const [destCol] = objPlacements[morphism.destId];
+        const { dx, dy, length } = arrowOffsets[morphism.id];
+        const x = colToX(srcCol) + dx / 2 + (arrowWidth * dy) / length;
+        const y = rowToY(srcRow) + dy / 2 - (arrowWidth * dx) / length;
+        // const xBuffer = Math.min(x, width - x);
+        const style: HTMLAttributes<HTMLDivElement>['style'] = {};
+        // if (dx / length === 1) {
+        //   style.left = x - xBuffer * dx / length;
+        //   style.right = width - x - xBuffer;
+        // } else {
+        if (dy > 0) {
+          style.left = x;
+        } else {
+          style.right = width - x;
+        }
+        // }
+        if (dx > 0) {
+          style.bottom = height - y;
+        } else {
+          style.top = y;
+        }
+
+        return (
+          <div key={morphism.id} style={style}>
+            <DiagramLabel text={morphism.name} />
+          </div>
         );
       })}
     </StyledDiagram>
@@ -129,10 +175,16 @@ export const Diagram: React.FC<DiagramProps> = ({
 
 export default Diagram;
 
-const StyledDiagram = styled.svg<{ width: number; height: number }>`
+const StyledDiagram = styled.div<{ width: number; height: number }>`
+  border: 1px solid black;
   width: ${({ width }) => width}px;
   height: ${({ height }) => height}px;
-  fill: black;
-  background-color: white;
-  border: 1px solid black;
+  position: relative;
+  > svg {
+    fill: black;
+  }
+  > div {
+    position: absolute;
+    text-align: center;
+  }
 `;
