@@ -462,7 +462,7 @@ export const getPlacements = ({
       const [destCol, destRow] = objectPlacements[morphism.destId];
 
       const dx = destCol - srcCol;
-      const dy = destRow - srcRow;
+      const dy = (destRow - srcRow) / 2;
       const length = Math.sqrt(dx * dx + dy * dy);
       const angle = Math.tan(dy / dx);
 

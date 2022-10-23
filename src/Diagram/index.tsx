@@ -12,8 +12,6 @@ export interface DiagramProps {
   height?: number;
 }
 
-type Offsets = Record<string, { dx: number; dy: number; length: number }>;
-
 const objRadius = 10;
 const arrowWidth = 5;
 const colSize = 200;
@@ -31,6 +29,7 @@ export const Diagram: React.FC<DiagramProps> = ({
     numCols,
     numRows,
     objects: objPlacements,
+    arrows: arrowPlacements,
   } = useMemo(() => getPlacements(model), [model]);
 
   const viewWidth = useMemo(() => numCols * colSize, [numCols]);
@@ -54,22 +53,6 @@ export const Diagram: React.FC<DiagramProps> = ({
 
   const colToX = useCallback((col: number) => (0.5 + col) * colSize, []);
   const rowToY = useCallback((row: number) => (1 + row) * rowSize, []);
-
-  const arrowOffsets = useMemo(
-    () =>
-      model.morphisms.reduce<Offsets>((accum, morphism) => {
-        const [srcCol, srcRow] = objPlacements[morphism.sourceId];
-        const [destCol, destRow] = objPlacements[morphism.destId];
-        const dx = colToX(destCol) - colToX(srcCol);
-        const dy = rowToY(destRow) - rowToY(srcRow);
-        const length = Math.sqrt(dx * dx + dy * dy);
-        return {
-          ...accum,
-          [morphism.id]: { dx, dy, length },
-        };
-      }, {}),
-    [model, colToX, rowToY, objPlacements],
-  );
 
   return (
     <StyledDiagram {...{ width, height }}>
@@ -107,14 +90,22 @@ export const Diagram: React.FC<DiagramProps> = ({
         {model.morphisms.map((morphism) => {
           const [srcCol, srcRow] = objPlacements[morphism.sourceId];
           const [destCol, destRow] = objPlacements[morphism.destId];
-          const { dx, dy, length } = arrowOffsets[morphism.id];
+          const { dx, dy, length } = arrowPlacements[morphism.id];
           const srcOffsetLength = arrowOffsetRatio * objRadius;
           const destOffsetLength =
             arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
-          const x1 = colToX(srcCol) + (srcOffsetLength * dx) / length;
-          const y1 = rowToY(srcRow) + (srcOffsetLength * dy) / length;
-          const x2 = colToX(destCol) - (destOffsetLength * dx) / length;
-          const y2 = rowToY(destRow) - (destOffsetLength * dy) / length;
+          const x1 =
+            colToX(srcCol) +
+            (srcOffsetLength * dx * rowSize) / (length * rowSize);
+          const y1 =
+            rowToY(srcRow) +
+            (srcOffsetLength * dy * rowSize) / (length * rowSize);
+          const x2 =
+            colToX(destCol) -
+            (destOffsetLength * dx * rowSize) / (length * rowSize);
+          const y2 =
+            rowToY(destRow) -
+            (destOffsetLength * dy * rowSize) / (length * rowSize);
 
           const style: HTMLAttributes<SVGLineElement>['style'] = {
             strokeWidth: arrowWidth,
@@ -158,9 +149,11 @@ export const Diagram: React.FC<DiagramProps> = ({
         if (!morphism.name) return null;
         const [srcCol, srcRow] = objPlacements[morphism.sourceId];
         // const [destCol] = objPlacements[morphism.destId];
-        const { dx, dy, length } = arrowOffsets[morphism.id];
-        const x = colToX(srcCol) + dx / 2 + (arrowWidth * dy) / length;
-        const y = rowToY(srcRow) + dy / 2 - (arrowWidth * dx) / length;
+        const { dx, dy, length } = arrowPlacements[morphism.id];
+        const x =
+          colToX(srcCol) + (dx * rowSize) / 2 + (arrowWidth * dy) / length;
+        const y =
+          rowToY(srcRow) + (dy * rowSize) / 2 - (arrowWidth * dx) / length;
         // const xBuffer = Math.min(x, width - x);
         const style: HTMLAttributes<HTMLDivElement>['style'] = {};
         // if (dx / length === 1) {
