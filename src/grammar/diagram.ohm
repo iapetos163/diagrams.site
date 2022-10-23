@@ -1,0 +1,50 @@
+
+Diagram {
+  Math = "$" (any *) "$"
+  plainName = alnum +
+  Identifier = Math | plainName
+
+  Type = caseInsensitive<"object"> | caseInsensitive<"objects">
+    | caseInsensitive<"morphism"> | caseInsensitive<"morphisms"> 
+    | caseInsensitive<"arrow"> | caseInsensitive<"arrows"> 
+    | caseInsensitive<"category"> | caseInsensitive<"categories"> 
+    | caseInsensitive<"functor"> | caseInsensitive<"functors">
+
+  ElementScope = caseInsensitive<"in"> Identifier | ":" Identifier
+  MapScope = ":" Identifier "->" Identifier
+    | caseInsensitive<"from"> Identifier caseInsensitive<"to"> Identifier
+  Scope = MapScope | ElementScope
+
+  List<e> = ((e ",") + caseInsensitive<"and"> ?) ? e -- list
+    | e caseInsensitive<"and"> e -- pair
+
+  TypedListScoped = Type ? List<Identifier> Scope
+  TypedListUnscoped = Type ? List<Identifier>
+  TypedList = TypedListScoped | TypedListUnscoped
+
+  PlainExpr = List<TypedList>
+
+  Given = caseInsensitive<"given"> List<TypedList>
+
+  exists = caseInsensitive<"is"> | caseInsensitive<"are"> | caseInsensitive<"exists"> | caseInsensitive<"exist">
+  SuchThat = ((caseInsensitive<"such"> | caseInsensitive<"so">) caseInsensitive<"that">) -- suchthat
+  | caseInsensitive<"s.t.">
+  | ":"
+  article = caseInsensitive<"a"> | caseInsensitive<"an">
+  Exists = caseInsensitive<"there"> exists article ? caseInsensitive<"unique"> TypedList (SuchThat SubExpr) ? 
+
+  ForallPrecedent = caseInsensitive<"given"> (article | caseInsensitive<"any">)? -- given
+    | caseInsensitive<"for"> ((article | caseInsensitive<"any"> | caseInsensitive<"every">) caseInsensitive<"given"> ?)? -- for1
+    | caseInsensitive<"for"> caseInsensitive<"all"> -- for2
+  Forall = ForallPrecedent TypedList ("," | ":") ? SubExpr
+
+  QuantifiedExpr = Exists | Forall
+
+  Expr = PlainExpr | QuantifiedExpr
+  SubExpr = "(" Expr ")" -- paren
+   | Expr -- noparen
+
+  Delimiter = "." | ";" | "\n"
+  Diagram = (PlainExpr Delimiter )* PlainExpr -- plain
+    | (Given Delimiter)* Given (QuantifiedExpr Delimiter)* QuantifiedExpr -- quantified
+}

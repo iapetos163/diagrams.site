@@ -1,6 +1,7 @@
 lockfileVersion: 5.4
 
 specifiers:
+  '@ohm-js/cli': ^1.1.0
   '@types/jest': ^29.1.2
   '@types/katex': ^0.14.0
   '@types/react': ^18.0.18
@@ -13,6 +14,7 @@ specifiers:
   jest: ^29.2.0
   jest-junit-reporter: ^1.1.0
   katex: ^0.16.3
+  ohm-js: ^16.4.0
   prettier: ^2.7.1
   prop-types: ^15.8.1
   react: ^18.2.0
@@ -29,11 +31,13 @@ specifiers:
 dependencies:
   '@types/katex': 0.14.0
   katex: 0.16.3
+  ohm-js: 16.4.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   styled-components: 5.3.6_biqbaboplfbrettd7655fr4n2y
 
 devDependencies:
+  '@ohm-js/cli': 1.1.0
   '@types/jest': 29.1.2
   '@types/react': 18.0.18
   '@types/react-dom': 18.0.6
@@ -763,6 +767,15 @@ packages:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.13.0
+    dev: true
+
+  /@ohm-js/cli/1.1.0:
+    resolution: {integrity: sha512-CQSwyT6JsO6qc6lFGy9/EF639ZwPVqx2u8ZW/lTCxBGcnBs4aPueJtEYg3XT8yi7oGslCpddvoVDbsnnIEy+mw==}
+    hasBin: true
+    dependencies:
+      commander: 8.3.0
+      fast-glob: 3.2.11
+      ohm-js: 16.4.0
     dev: true
 
   /@sinclair/typebox/0.24.46:
@@ -4132,6 +4145,10 @@ packages:
   /obuf/1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
     dev: true
+
+  /ohm-js/16.4.0:
+    resolution: {integrity: sha512-u1QI5h2w29I4838+/m32rzqfNNH1Qej9L6O1MTZZMx7bVOu09orc/TO0HRVeYh5jStieZ3INszM7oqbCdx2x7A==}
+    engines: {node: '>=0.12.1'}
 
   /on-finished/2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}

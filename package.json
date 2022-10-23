@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development webpack serve",
-    "build": "NODE_ENV=production webpack",
+    "gen-grammar": "ohm generateBundles -t src/grammar/*.ohm",
+    "build": "pnpm run gen-grammar &&  NODE_ENV=production webpack",
     "test": "jest"
   },
   "keywords": [],
   "author": "iapetos163",
   "license": "CC BY-NC-SA 4.0",
   "devDependencies": {
+    "@ohm-js/cli": "^1.1.0",
     "@types/jest": "^29.1.2",
     "@types/react": "^18.0.18",
     "@types/react-dom": "^18.0.6",
@@ -35,6 +37,7 @@
   "dependencies": {
     "@types/katex": "^0.14.0",
     "katex": "^0.16.3",
+    "ohm-js": "^16.4.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "styled-components": "^5.3.6"
