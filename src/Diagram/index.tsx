@@ -1,11 +1,13 @@
 import React, { HTMLAttributes, useCallback, useMemo } from 'react';
 import styled from 'styled-components';
+import { ColorScheme } from '../color';
 import { DiagramModel } from '../diagram-model';
 import DiagramLabel from './DiagramLabel';
 import { getPlacements } from './placement';
 
 export interface DiagramProps {
   model: DiagramModel;
+  colorScheme?: ColorScheme;
   width?: number;
   height?: number;
 }
@@ -21,6 +23,7 @@ const markerSize = 4;
 
 export const Diagram: React.FC<DiagramProps> = ({
   model,
+  colorScheme,
   width: givenWidth,
   height: givenHeight,
 }) => {
@@ -87,12 +90,17 @@ export const Diagram: React.FC<DiagramProps> = ({
 
         {model.objects.map((obj) => {
           const [col, row] = objPlacements[obj.id];
+          const style: HTMLAttributes<SVGCircleElement>['style'] = {};
+          if (colorScheme) {
+            style.fill = colorScheme.objects[obj.id].dark;
+          }
           return (
             <circle
               key={obj.id}
               cx={colToX(col)}
               cy={rowToY(row)}
               r={objRadius}
+              style={style}
             />
           );
         })}
@@ -108,6 +116,13 @@ export const Diagram: React.FC<DiagramProps> = ({
           const x2 = colToX(destCol) - (destOffsetLength * dx) / length;
           const y2 = rowToY(destRow) - (destOffsetLength * dy) / length;
 
+          const style: HTMLAttributes<SVGLineElement>['style'] = {
+            strokeWidth: arrowWidth,
+          };
+          if (colorScheme) {
+            style.stroke = colorScheme.morphisms[morphism.id].dark;
+          }
+
           return (
             <line
               key={morphism.id}
@@ -115,9 +130,7 @@ export const Diagram: React.FC<DiagramProps> = ({
               y1={y1}
               x2={x2}
               y2={y2}
-              strokeWidth={arrowWidth}
-              fill="none"
-              stroke="black"
+              style={style}
               markerEnd="url(#arrow)"
             />
           );
@@ -126,15 +139,18 @@ export const Diagram: React.FC<DiagramProps> = ({
       {model.objects.map((obj) => {
         if (!obj.name) return null;
         const [col, row] = objPlacements[obj.id];
+
+        const style: HTMLAttributes<HTMLDivElement>['style'] = {
+          right: width - colToX(col) + objRadius,
+          bottom: height - rowToY(row) + objRadius,
+        };
+        if (colorScheme) {
+          style.color = colorScheme.objects[obj.id].dark;
+        }
+
         return (
-          <div
-            key={obj.id}
-            style={{
-              right: width - colToX(col) + objRadius,
-              bottom: height - rowToY(row) + objRadius,
-            }}
-          >
-            <DiagramLabel text={obj.name} />
+          <div key={obj.id} style={style}>
+            <DiagramLabel text={obj.name} quantification={obj.quantification} />
           </div>
         );
       })}
@@ -163,9 +179,16 @@ export const Diagram: React.FC<DiagramProps> = ({
           style.top = y;
         }
 
+        if (colorScheme) {
+          style.color = colorScheme.morphisms[morphism.id].dark;
+        }
+
         return (
           <div key={morphism.id} style={style}>
-            <DiagramLabel text={morphism.name} />
+            <DiagramLabel
+              text={morphism.name}
+              quantification={morphism.quantification}
+            />
           </div>
         );
       })}
@@ -181,7 +204,9 @@ const StyledDiagram = styled.div<{ width: number; height: number }>`
   height: ${({ height }) => height}px;
   position: relative;
   > svg {
-    fill: black;
+    line {
+      stroke: black;
+    }
   }
   > div {
     position: absolute;

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import styled from 'styled-components';
-import { makeColor } from './color';
+import { makeColor, makeColorScheme } from './color';
 import Diagram from './Diagram';
 import { DiagramModel } from './diagram-model';
 
@@ -64,13 +64,14 @@ const sampleDiagram: DiagramModel = {
   functorMappings: [],
 };
 
+const colorScheme = makeColorScheme(sampleDiagram);
+
 const App = () => {
   const [pctHue, setPctHue] = useState(0);
   const [pctSat, setPctSat] = useState(100);
 
   return (
     <>
-      <a href="https://example.com" target="_blank" rel="noreferrer"></a>
       <h1>
         <ControlledColor {...{ pctHue, pctSat }}>diagrams.site</ControlledColor>
       </h1>
@@ -84,7 +85,7 @@ const App = () => {
         value={pctSat}
         onChange={(e) => setPctSat(e.target.valueAsNumber)}
       ></input>
-      <Diagram model={sampleDiagram} />
+      <Diagram model={sampleDiagram} colorScheme={colorScheme} />
       <textarea></textarea>
     </>
   );

@@ -35,6 +35,7 @@ export interface Functor {
 }
 
 export interface FunctorMapping {
+  id: string;
   type: 'object' | 'morphism';
   /** Required if in a diagram with functors.length > 0 */
   functorId?: string;
