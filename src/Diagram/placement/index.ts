@@ -58,6 +58,14 @@ export interface Placements {
   categories: {
     [categoryId: string]: [number, number, number, number];
   };
+  arrows: {
+    [morphismId: string]: {
+      dx: number;
+      dy: number;
+      length: number;
+      angle: number;
+    };
+  };
   numRows: number;
   numCols: number;
 }
@@ -448,10 +456,34 @@ export const getPlacements = ({
     categoryPlacements[categoryId] = [catLeft, catTop, catRight, catBottom];
   }
 
+  const arrowPlacements = morphisms.reduce<Placements['arrows']>(
+    (accum, morphism) => {
+      const [srcCol, srcRow] = objectPlacements[morphism.sourceId];
+      const [destCol, destRow] = objectPlacements[morphism.destId];
+
+      const dx = destCol - srcCol;
+      const dy = destRow - srcRow;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const angle = Math.tan(dy / dx);
+
+      return {
+        ...accum,
+        [morphism.id]: {
+          dx,
+          dy,
+          length,
+          angle,
+        },
+      };
+    },
+    {},
+  );
+
   return {
     numCols,
     numRows,
     objects: objectPlacements,
     categories: categoryPlacements,
+    arrows: arrowPlacements,
   };
 };
