@@ -16,7 +16,7 @@ const objRadius = 10;
 const arrowWidth = 5;
 const colSize = 200;
 const rowSize = 100;
-const arrowOffsetRatio = 1.3;
+const arrowOffsetRatio = 1.6;
 const markerSize = 4;
 
 export const Diagram: React.FC<DiagramProps> = ({
@@ -83,19 +83,41 @@ export const Diagram: React.FC<DiagramProps> = ({
           const totalOffsetLength =
             arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
 
-          let darkColor, brightColor: string | undefined;
+          let dark, bright: string | undefined;
           if (colorScheme) {
-            darkColor = colorScheme.morphisms[morphism.id].dark;
+            ({ dark, bright } = colorScheme.morphisms[morphism.id]);
           }
 
           return (
             <StyledArrow
-              darkColor={darkColor}
+              darkColor={dark}
+              brightColor={bright}
               arrowWidth={arrowWidth}
               key={morphism.id}
               transform={`translate(${colToX(srcCol)}, ${rowToY(srcRow)})`}
             >
               <g transform={`rotate(${(angle * 180) / Math.PI})`}>
+                <g
+                  transform={`translate(${
+                    length * colSize - totalOffsetLength
+                  }, 0)`}
+                >
+                  <g
+                    transform={`scale(${(markerSize * arrowWidth * 1.4) / 2})`}
+                  >
+                    <path
+                      className="outline"
+                      d="M -0.86 -1 L 1 0 L -0.86 1 z"
+                    />
+                  </g>
+                </g>
+                <line
+                  className="outline"
+                  x1={srcOffsetLength}
+                  y1={0}
+                  x2={length * colSize - totalOffsetLength}
+                  y2={0}
+                />
                 <line
                   x1={srcOffsetLength}
                   y1={0}
@@ -107,8 +129,8 @@ export const Diagram: React.FC<DiagramProps> = ({
                     length * colSize - totalOffsetLength
                   }, 0)`}
                 >
-                  <g transform={`scale(${(markerSize * arrowWidth) / 10})`}>
-                    <path d="M -5 -5 L 5 0 L -5 5 z" />
+                  <g transform={`scale(${(markerSize * arrowWidth) / 2})`}>
+                    <path d="M -1 -1 L 1 0 L -1 1 z" />
                   </g>
                 </g>
               </g>
@@ -192,17 +214,28 @@ const StyledDiagram = styled.div<{ width: number; height: number }>`
   }
   > svg {
     circle {
-      stroke-width: 2;
+      stroke-width: 4;
     }
   }
 `;
 
-const StyledArrow = styled.g<{ darkColor?: string; arrowWidth: number }>`
+const StyledArrow = styled.g<{
+  darkColor?: string;
+  brightColor?: string;
+  arrowWidth: number;
+}>`
+  line.outline {
+    stroke-width: ${arrowWidth * 1.8};
+    stroke: ${({ brightColor = 'black' }) => brightColor};
+  }
   line {
     stroke-width: ${arrowWidth};
     stroke: ${({ darkColor = 'black' }) => darkColor};
   }
   path {
     fill: ${({ darkColor = 'black' }) => darkColor};
+  }
+  path.outline {
+    fill: ${({ brightColor = 'black' }) => brightColor};
   }
 `;
