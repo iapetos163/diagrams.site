@@ -61,7 +61,9 @@ export const Diagram: React.FC<DiagramProps> = ({
           const [col, row] = objPlacements[obj.id];
           const style: HTMLAttributes<SVGCircleElement>['style'] = {};
           if (colorScheme) {
-            style.fill = colorScheme.objects[obj.id].dark;
+            const { dark, bright } = colorScheme.objects[obj.id];
+            style.fill = dark;
+            style.stroke = bright;
           }
           return (
             <circle
@@ -81,14 +83,14 @@ export const Diagram: React.FC<DiagramProps> = ({
           const totalOffsetLength =
             arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
 
-          let color: string | undefined;
+          let darkColor, brightColor: string | undefined;
           if (colorScheme) {
-            color = colorScheme.morphisms[morphism.id].dark;
+            darkColor = colorScheme.morphisms[morphism.id].dark;
           }
 
           return (
             <StyledArrow
-              arrowColor={color}
+              darkColor={darkColor}
               arrowWidth={arrowWidth}
               key={morphism.id}
               transform={`translate(${colToX(srcCol)}, ${rowToY(srcRow)})`}
@@ -187,14 +189,19 @@ const StyledDiagram = styled.div<{ width: number; height: number }>`
     position: absolute;
     text-align: center;
   }
+  > svg {
+    circle {
+      stroke-width: 2px;
+    }
+  }
 `;
 
-const StyledArrow = styled.g<{ arrowColor?: string; arrowWidth: number }>`
+const StyledArrow = styled.g<{ darkColor?: string; arrowWidth: number }>`
   line {
     stroke-width: ${arrowWidth};
-    stroke: ${({ arrowColor = 'black' }) => arrowColor};
+    stroke: ${({ darkColor = 'black' }) => darkColor};
   }
   path {
-    fill: ${({ arrowColor = 'black' }) => arrowColor};
+    fill: ${({ darkColor = 'black' }) => darkColor};
   }
 `;

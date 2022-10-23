@@ -67,13 +67,13 @@ const sampleDiagram: DiagramModel = {
 const colorScheme = makeColorScheme(sampleDiagram);
 
 const App = () => {
-  const [pctHue, setPctHue] = useState(0);
-  const [pctSat, setPctSat] = useState(100);
+  // const [pctHue, setPctHue] = useState(0);
+  // const [pctSat, setPctSat] = useState(100);
 
   return (
     <>
       <h1>diagrams.site</h1>
-      <ControlledColor {...{ pctHue, pctSat }}>
+      {/* <ControlledColor {...{ pctHue, pctSat }}>
         <div style={{ width: 100, height: 200 }} />
       </ControlledColor>
       <input
@@ -85,7 +85,7 @@ const App = () => {
         type="range"
         value={pctSat}
         onChange={(e) => setPctSat(e.target.valueAsNumber)}
-      ></input>
+      ></input> */}
       <Diagram model={sampleDiagram} colorScheme={colorScheme} />
       <textarea></textarea>
     </>
