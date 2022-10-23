@@ -5,6 +5,8 @@ import { getPlacements } from './placement';
 
 export interface DiagramProps {
   model: DiagramModel;
+  width?: number;
+  height?: number;
 }
 
 type Offsets = Record<string, { dx: number; dy: number; length: number }>;
@@ -16,15 +18,52 @@ const rowSize = 100;
 const arrowOffsetRatio = 1.2;
 const markerSize = 5;
 
-export const Diagram: React.FC<DiagramProps> = ({ model }) => {
+export const Diagram: React.FC<DiagramProps> = ({
+  model,
+  width: givenWidth,
+  height: givenHeight,
+}) => {
   const {
     numCols,
     numRows,
     objects: objPlacements,
   } = useMemo(() => getPlacements(model), [model]);
 
-  const width = useMemo(() => numCols * colSize, [numCols]);
-  const height = useMemo(() => (numRows + 1) * rowSize, [numRows]);
+  const viewWidth = useMemo(() => numCols * colSize, [numCols]);
+  const viewHeight = useMemo(() => (numRows + 1) * rowSize, [numRows]);
+
+  const { width, height, viewBox } = useMemo(() => {
+    if (givenWidth === undefined && givenHeight === undefined) {
+      return {
+        width: viewWidth,
+        height: viewHeight,
+        viewBox: [0, 0, viewWidth, viewHeight].join(' '),
+      };
+    }
+    const width = givenWidth ?? (givenHeight! * viewWidth) / viewHeight;
+    const height = givenHeight ?? (givenWidth! * viewHeight) / viewWidth;
+
+    const expHeight = (height * viewWidth) / width;
+    const expWidth = (width * viewHeight) / height;
+
+    if (expHeight > viewHeight) {
+      const viewOffsetY = (height - expHeight) / 2;
+      return {
+        width,
+        height,
+        viewBox: [0, -viewOffsetY, viewWidth, expHeight - viewOffsetY].join(
+          ' ',
+        ),
+      };
+    }
+
+    const viewOffsetX = (width - expWidth) / 2;
+    return {
+      width,
+      height,
+      viewBox: [-viewOffsetX, 0, expWidth - viewOffsetX, viewHeight].join(' '),
+    };
+  }, [givenWidth, givenHeight, viewWidth, viewHeight]);
 
   const colToX = useCallback((col: number) => (0.5 + col) * colSize, []);
   const rowToY = useCallback((row: number) => (1 + row) * rowSize, []);
@@ -46,7 +85,7 @@ export const Diagram: React.FC<DiagramProps> = ({ model }) => {
   );
 
   return (
-    <StyledDiagram viewBox={`0 0 ${width} ${height}`} {...{ width, height }}>
+    <StyledDiagram {...{ width, viewBox, height }}>
       <defs>
         <marker
           id="arrow"
@@ -74,19 +113,17 @@ export const Diagram: React.FC<DiagramProps> = ({ model }) => {
         const y2 = rowToY(destRow) - (destOffsetLength * dy) / length;
 
         return (
-          <>
-            <line
-              key={morphism.id}
-              x1={x1}
-              y1={y1}
-              x2={x2}
-              y2={y2}
-              strokeWidth={arrowWidth}
-              fill="none"
-              stroke="black"
-              markerEnd="url(#arrow)"
-            />
-          </>
+          <line
+            key={morphism.id}
+            x1={x1}
+            y1={y1}
+            x2={x2}
+            y2={y2}
+            strokeWidth={arrowWidth}
+            fill="none"
+            stroke="black"
+            markerEnd="url(#arrow)"
+          />
         );
       })}
       {model.objects.map((obj) => {
