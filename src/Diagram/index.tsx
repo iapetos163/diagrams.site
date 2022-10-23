@@ -57,20 +57,6 @@ export const Diagram: React.FC<DiagramProps> = ({
   return (
     <StyledDiagram {...{ width, height }}>
       <svg viewBox={`0 0 ${viewWidth} ${viewHeight}`}>
-        <defs>
-          <marker
-            id="arrow"
-            viewBox="0 0 10 10"
-            refX="5"
-            refY="5"
-            markerWidth={markerSize}
-            markerHeight={markerSize}
-            orient="auto-start-reverse"
-          >
-            <path d="M 0 0 L 10 5 L 0 10 z" />
-          </marker>
-        </defs>
-
         {model.objects.map((obj) => {
           const [col, row] = objPlacements[obj.id];
           const style: HTMLAttributes<SVGCircleElement>['style'] = {};
@@ -89,23 +75,11 @@ export const Diagram: React.FC<DiagramProps> = ({
         })}
         {model.morphisms.map((morphism) => {
           const [srcCol, srcRow] = objPlacements[morphism.sourceId];
-          const [destCol, destRow] = objPlacements[morphism.destId];
-          const { dx, dy, length, angle } = arrowPlacements[morphism.id];
+          const { length, angle } = arrowPlacements[morphism.id];
           const srcOffsetLength = arrowOffsetRatio * objRadius;
-          const destOffsetLength =
+
+          const totalOffsetLength =
             arrowOffsetRatio * objRadius + (markerSize * arrowWidth) / 2;
-          const x1 =
-            colToX(srcCol) +
-            (srcOffsetLength * dx * rowSize) / (length * rowSize);
-          const y1 =
-            rowToY(srcRow) +
-            (srcOffsetLength * dy * rowSize) / (length * rowSize);
-          const x2 =
-            colToX(destCol) -
-            (destOffsetLength * dx * rowSize) / (length * rowSize);
-          const y2 =
-            rowToY(destRow) -
-            (destOffsetLength * dy * rowSize) / (length * rowSize);
 
           let color: string | undefined;
           if (colorScheme) {
@@ -117,16 +91,20 @@ export const Diagram: React.FC<DiagramProps> = ({
               arrowColor={color}
               arrowWidth={arrowWidth}
               key={morphism.id}
+              transform={`translate(${colToX(srcCol)}, ${rowToY(srcRow)})`}
             >
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                // markerEnd="url(#arrow)"
-              />
-              <g transform={`translate(${x2}, ${y2})`}>
-                <g transform={`rotate(${(angle * 180) / Math.PI})`}>
+              <g transform={`rotate(${(angle * 180) / Math.PI})`}>
+                <line
+                  x1={srcOffsetLength}
+                  y1={0}
+                  x2={length * colSize - totalOffsetLength}
+                  y2={0}
+                />
+                <g
+                  transform={`translate(${
+                    length * colSize - totalOffsetLength
+                  }, 0)`}
+                >
                   <g transform={`scale(${(markerSize * arrowWidth) / 10})`}>
                     <path d="M -5 -5 L 5 0 L -5 5 z" />
                   </g>
@@ -160,9 +138,9 @@ export const Diagram: React.FC<DiagramProps> = ({
         // const [destCol] = objPlacements[morphism.destId];
         const { dx, dy, length } = arrowPlacements[morphism.id];
         const x =
-          colToX(srcCol) + (dx * rowSize) / 2 + (arrowWidth * dy) / length;
+          colToX(srcCol) + (dx * colSize) / 2 + (arrowWidth * dy) / length;
         const y =
-          rowToY(srcRow) + (dy * rowSize) / 2 - (arrowWidth * dx) / length;
+          rowToY(srcRow) + (dy * colSize) / 2 - (arrowWidth * dx) / length;
         // const xBuffer = Math.min(x, width - x);
         const style: HTMLAttributes<HTMLDivElement>['style'] = {};
         // if (dx / length === 1) {
