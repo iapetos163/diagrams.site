@@ -32,36 +32,19 @@ export const Diagram: React.FC<DiagramProps> = ({
   const viewWidth = useMemo(() => numCols * colSize, [numCols]);
   const viewHeight = useMemo(() => (numRows + 1) * rowSize, [numRows]);
 
-  const { width, height, viewBox } = useMemo(() => {
+  const { width, height } = useMemo(() => {
     if (givenWidth === undefined && givenHeight === undefined) {
       return {
         width: viewWidth,
         height: viewHeight,
-        viewBox: [0, 0, viewWidth, viewHeight].join(' '),
       };
     }
     const width = givenWidth ?? (givenHeight! * viewWidth) / viewHeight;
     const height = givenHeight ?? (givenWidth! * viewHeight) / viewWidth;
 
-    const expHeight = (height * viewWidth) / width;
-    const expWidth = (width * viewHeight) / height;
-
-    if (expHeight > viewHeight) {
-      const viewOffsetY = (height - expHeight) / 2;
-      return {
-        width,
-        height,
-        viewBox: [0, -viewOffsetY, viewWidth, expHeight - viewOffsetY].join(
-          ' ',
-        ),
-      };
-    }
-
-    const viewOffsetX = (width - expWidth) / 2;
     return {
       width,
       height,
-      viewBox: [-viewOffsetX, 0, expWidth - viewOffsetX, viewHeight].join(' '),
     };
   }, [givenWidth, givenHeight, viewWidth, viewHeight]);
 
@@ -85,7 +68,10 @@ export const Diagram: React.FC<DiagramProps> = ({
   );
 
   return (
-    <StyledDiagram {...{ width, viewBox, height }}>
+    <StyledDiagram
+      viewBox={`0 0 ${viewWidth} ${viewHeight}`}
+      {...{ width, height }}
+    >
       <defs>
         <marker
           id="arrow"
@@ -148,4 +134,5 @@ const StyledDiagram = styled.svg<{ width: number; height: number }>`
   height: ${({ height }) => height}px;
   fill: black;
   background-color: white;
+  border: 1px solid black;
 `;
