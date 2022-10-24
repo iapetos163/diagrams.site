@@ -31,7 +31,7 @@ export interface DiagramActionDict<T> extends ActionDict<T> {
   SuchThat_suchthat?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
   SuchThat?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
   article?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  Exists?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: IterationNode, arg3: NonterminalNode, arg4: NonterminalNode, arg5: IterationNode, arg6: IterationNode) => T;
+  Exists?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: IterationNode, arg3: IterationNode, arg4: NonterminalNode, arg5: IterationNode, arg6: IterationNode) => T;
   ForallPrecedent_given?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   ForallPrecedent_for1?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: IterationNode) => T;
   ForallPrecedent_for2?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;

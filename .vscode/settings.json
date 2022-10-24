@@ -13,5 +13,5 @@
     "source.fixAll.eslint": true
   },
   "eslint.validate": ["typescript", "typescriptreact"],
-  "cSpell.words": ["functors"]
+  "cSpell.words": ["codomain", "functors"]
 }

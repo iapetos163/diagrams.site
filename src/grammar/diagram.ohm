@@ -31,12 +31,12 @@ Diagram {
   | caseInsensitive<"s.t.">
   | ":"
   article = caseInsensitive<"a"> | caseInsensitive<"an">
-  Exists = caseInsensitive<"there"> exists article ? caseInsensitive<"unique"> TypedList (SuchThat SubExpr) ? 
+  Exists = caseInsensitive<"there"> exists article ? caseInsensitive<"unique"> ? PlainExpr (SuchThat SubExpr) ? 
 
   ForallPrecedent = caseInsensitive<"given"> (article | caseInsensitive<"any">)? -- given
     | caseInsensitive<"for"> ((article | caseInsensitive<"any"> | caseInsensitive<"every">) caseInsensitive<"given"> ?)? -- for1
     | caseInsensitive<"for"> caseInsensitive<"all"> -- for2
-  Forall = ForallPrecedent TypedList ("," | ":") ? SubExpr
+  Forall = ForallPrecedent PlainExpr ("," | ":") ? SubExpr
 
   QuantifiedExpr = Exists | Forall
 
