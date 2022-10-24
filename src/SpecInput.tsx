@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { DiagramModel } from './diagram-model';
+import { DiagramModel, emptyDiagram } from './diagram-model';
 import { getMatcher, semantics } from './language';
 
 export interface SpecInputProps {
@@ -27,12 +27,11 @@ export const SpecInput: React.FC<SpecInputProps> = ({
         return;
       }
       try {
-        const s = semantics(res);
-        const diagram: DiagramModel = s.diagram;
-        console.log({ diagram, s });
+        const diagram: DiagramModel = semantics(res).diagram;
+        console.log({ diagram });
+        setErrorMessage('');
         onDiagramChange(diagram);
       } catch (err: any) {
-        console.error(err);
         setErrorMessage(err.message);
       }
     },

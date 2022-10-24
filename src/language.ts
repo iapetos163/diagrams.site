@@ -24,13 +24,13 @@ type StatementContext = {
   quantification: Quantification;
   diagram: DiagramModel;
   /** name: id */
-  names: Record<string, string>;
+  nameIds: Record<string, string>;
 };
 
 const emptyContext: StatementContext = {
   diagram: emptyDiagram,
   quantification: 'GIVEN',
-  names: {},
+  nameIds: {},
 };
 
 type IdListContext = StatementContext & {
@@ -50,19 +50,26 @@ const makeId = (name: string, taken: string[]) => {
 
 const addIdentifiers = (
   names: string[],
-  { names: nameIds, exprType, scope, diagram, quantification }: IdListContext,
+  {
+    nameIds: prevNameIds,
+    exprType,
+    scope,
+    diagram,
+    quantification,
+  }: IdListContext,
 ): StatementContext => {
   if (!exprType) {
     if (!scope || scope.type === 'element') {
       exprType = 'object';
     } else {
-      const sourceId = nameIds[scope.subjectName];
+      const sourceId = prevNameIds[scope.subjectName];
       const sourceCat = diagram.categories.find((c) => c.id === sourceId);
       exprType = sourceCat ? 'functor' : 'morphism';
     }
   }
 
   const newDiagram: DiagramModel = { ...diagram };
+  const nameIds = { ...prevNameIds };
 
   for (const name of names) {
     if (nameIds[name]) {
@@ -168,7 +175,7 @@ const addIdentifiers = (
 
   return {
     diagram: newDiagram,
-    names: nameIds,
+    nameIds,
     quantification,
   };
 };
