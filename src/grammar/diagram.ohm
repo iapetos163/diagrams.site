@@ -1,5 +1,8 @@
 
 Diagram {
+  Diagram = (PlainExpr Delimiter )* PlainExpr -- plain
+    | (Given Delimiter)* Given (QuantifiedExpr Delimiter)* QuantifiedExpr -- quantified
+    
   Math = "$" (any *) "$"
   plainName = alnum +
   Identifier = Math | plainName
@@ -45,6 +48,4 @@ Diagram {
    | Expr -- noparen
 
   Delimiter = "." | ";" | "\n"
-  Diagram = (PlainExpr Delimiter )* PlainExpr -- plain
-    | (Given Delimiter)* Given (QuantifiedExpr Delimiter)* QuantifiedExpr -- quantified
 }

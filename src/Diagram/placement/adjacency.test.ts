@@ -74,4 +74,12 @@ describe('getObjectAdjacencies', () => {
     expect(destinations[DEFAULT_ID]['c']).toHaveLength(1);
     expect(destinations[DEFAULT_ID]['c']).toContain('d');
   });
+
+  it('Handles an object with no adjacencies', () => {
+    const { sources, destinations } = getObjectAdjacencies(
+      [{ id: 'a', quantification: 'GIVEN' }],
+      [],
+    );
+    expect(destinations[DEFAULT_ID]['a']).toHaveLength(0);
+  });
 });

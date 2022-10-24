@@ -85,6 +85,8 @@ export const getPlacements = ({
   const { sources: sourcesForObjects, destinations: destsForObjects } =
     getObjectAdjacencies(objects, morphisms);
 
+  console.debug('adjacencies', { destsForObjects, sourcesForObjects });
+
   /*
   We want to assign a "tier" to each object, which is an n >= 0 such that
   any given path in the graph tends to increase n.

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import styled from 'styled-components';
-import { makeColor, makeColorScheme } from './color';
+import { makeColorScheme } from './color';
 import Diagram from './Diagram';
-import { DiagramModel } from './diagram-model';
+import { DiagramModel, emptyDiagram } from './diagram-model';
+import SpecInput from './SpecInput';
 import './style.css';
 
 const sampleDiagram: DiagramModel = {
@@ -65,38 +65,20 @@ const sampleDiagram: DiagramModel = {
   functorMappings: [],
 };
 
-const colorScheme = makeColorScheme(sampleDiagram);
-
 const App = () => {
-  // const [pctHue, setPctHue] = useState(0);
-  // const [pctSat, setPctSat] = useState(100);
+  const [diagram, setDiagram] = useState(emptyDiagram);
+  const colorScheme = useMemo(() => makeColorScheme(diagram), [diagram]);
+
+  const onDiagramChange = (diagram: DiagramModel) => setDiagram(diagram);
 
   return (
     <>
       <h1>diagrams.site</h1>
-      {/* <ControlledColor {...{ pctHue, pctSat }}>
-        <div style={{ width: 100, height: 200 }} />
-      </ControlledColor>
-      <input
-        type="range"
-        value={pctHue}
-        onChange={(e) => setPctHue(e.target.valueAsNumber)}
-      ></input>
-      <input
-        type="range"
-        value={pctSat}
-        onChange={(e) => setPctSat(e.target.valueAsNumber)}
-      ></input> */}
-      <Diagram model={sampleDiagram} colorScheme={colorScheme} />
-      <textarea></textarea>
+      <Diagram model={diagram} colorScheme={colorScheme} />
+      <SpecInput onDiagramChange={onDiagramChange} />
     </>
   );
 };
-
-const ControlledColor = styled.div<{ pctHue: number; pctSat: number }>`
-  background-color: ${({ pctHue, pctSat }) =>
-    makeColor(pctHue * 3.6, pctSat / 100).bright};
-`;
 
 const root = createRoot(document.getElementById('root')!);
 root.render(<App />);

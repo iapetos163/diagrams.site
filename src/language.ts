@@ -39,7 +39,7 @@ type IdListContext = StatementContext & {
 };
 
 const makeId = (name: string, taken: string[]) => {
-  const normalized = name.toLowerCase().replaceAll(/[^\w-]/, '');
+  const normalized = name.toLowerCase().replaceAll(/[^\w-]/g, '');
   if (normalized && !taken.some((t) => t === normalized)) return normalized;
   let i = normalized ? 2 : 1;
   while (taken.some((t) => t === `${normalized}__${i}`)) {
@@ -62,6 +62,8 @@ const addIdentifiers = (
     }
   }
 
+  const newDiagram: DiagramModel = { ...diagram };
+
   for (const name of names) {
     if (nameIds[name]) {
       throw new Error(`Name ${name} declared more than once`);
@@ -71,10 +73,13 @@ const addIdentifiers = (
     nameIds[name] = id;
     switch (exprType) {
       case 'category':
-        diagram.categories.push({
-          id,
-          name,
-        });
+        newDiagram.categories = [
+          ...newDiagram.categories,
+          {
+            id,
+            name,
+          },
+        ];
         break;
       case 'object': {
         const obj: Obj = {
@@ -90,7 +95,7 @@ const addIdentifiers = (
           }
           obj.categoryId = nameIds[scope.subjectName];
         }
-        diagram.objects.push(obj);
+        newDiagram.objects = [...newDiagram.objects, obj];
         break;
       }
       case 'morphism': {
@@ -112,15 +117,18 @@ const addIdentifiers = (
             `Object ${scope.cosubjectName} used before declaration`,
           );
         }
-        diagram.morphisms.push({
-          id,
-          name,
-          sourceId,
-          destId,
-          quantification,
-          categoryId: diagram.objects.find((o) => o.id === sourceId)
-            ?.categoryId,
-        });
+        newDiagram.morphisms = [
+          ...newDiagram.morphisms,
+          {
+            id,
+            name,
+            sourceId,
+            destId,
+            quantification,
+            categoryId: newDiagram.objects.find((o) => o.id === sourceId)
+              ?.categoryId,
+          },
+        ];
         break;
       }
       case 'functor': {
@@ -142,12 +150,15 @@ const addIdentifiers = (
             `Category ${scope.cosubjectName} used before declaration`,
           );
         }
-        diagram.functors.push({
-          id,
-          name,
-          sourceCategoryId: sourceId,
-          destCategoryId: destId,
-        });
+        newDiagram.functors = [
+          ...newDiagram.functors,
+          {
+            id,
+            name,
+            sourceCategoryId: sourceId,
+            destCategoryId: destId,
+          },
+        ];
         break;
       }
       default:
@@ -156,7 +167,7 @@ const addIdentifiers = (
   }
 
   return {
-    diagram,
+    diagram: newDiagram,
     names: nameIds,
     quantification,
   };
@@ -168,7 +179,7 @@ export const semantics = grammar.createSemantics();
 
 semantics.addAttribute('name', {
   Math($1, node, $2) {
-    const norm = node.sourceString.trim().replaceAll(/\s+/, ' ');
+    const norm = node.sourceString.trim().replaceAll(/\s+/g, ' ');
     return `$${norm}$`;
   },
   plainName(node) {
@@ -320,7 +331,7 @@ semantics.addAttribute('parseTypedListList', {
   },
 });
 
-semantics.addAttribute('eval', {
+semantics.addAttribute('diagram', {
   Diagram_plain(exprs, delim, expr) {
     const context = exprs.children.concat([expr]).reduce((context, node) => {
       return node.parseStatement(context);

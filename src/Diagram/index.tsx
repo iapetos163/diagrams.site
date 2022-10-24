@@ -31,6 +31,7 @@ export const Diagram: React.FC<DiagramProps> = ({
     objects: objPlacements,
     arrows: arrowPlacements,
   } = useMemo(() => getPlacements(model), [model]);
+  console.log({ numCols, numRows, objPlacements });
 
   const viewWidth = useMemo(() => numCols * colSize, [numCols]);
   const viewHeight = useMemo(() => (numRows + 1) * rowSize, [numRows]);

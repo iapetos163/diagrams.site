@@ -12,6 +12,9 @@ import {
 } from 'ohm-js';
 
 export interface DiagramActionDict<T> extends ActionDict<T> {
+  Diagram_plain?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode) => T;
+  Diagram_quantified?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode, arg3: IterationNode, arg4: IterationNode, arg5: NonterminalNode) => T;
+  Diagram?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Math?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: TerminalNode) => T;
   plainName?: (this: NonterminalNode, arg0: IterationNode) => T;
   Identifier?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -43,9 +46,6 @@ export interface DiagramActionDict<T> extends ActionDict<T> {
   SubExpr_noparen?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   SubExpr?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Delimiter?: (this: NonterminalNode, arg0: TerminalNode) => T;
-  Diagram_plain?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode) => T;
-  Diagram_quantified?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode, arg3: IterationNode, arg4: IterationNode, arg5: NonterminalNode) => T;
-  Diagram?: (this: NonterminalNode, arg0: NonterminalNode) => T;
 }
 
 export interface DiagramSemantics extends Semantics {
