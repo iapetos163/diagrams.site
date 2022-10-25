@@ -365,8 +365,8 @@ export const getPlacements = ({
       }
       return {
         left: 0,
-        numCols: largestTier,
-        numRows: longestPath,
+        numCols: largestTierSize,
+        numRows: longestPath + 1,
         placements: localPlacement,
       };
     }
@@ -437,7 +437,6 @@ export const getPlacements = ({
       // Place globally
       const globalPlaceRow = globalRowsNeeded - local.numRows;
       for (const { objId, col: localCol, row: localRow } of local.placements) {
-        console.debug('placing an object');
         objectPlacements[objId] = [
           numCols + localCol - local.left,
           globalPlaceRow + 2 * localRow,
