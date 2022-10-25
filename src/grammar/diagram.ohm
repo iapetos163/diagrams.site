@@ -3,37 +3,37 @@ Diagram {
   Diagram = (PlainExpr Delimiter )* PlainExpr -- plain
     | (Given Delimiter)* Given (QuantifiedExpr Delimiter)* QuantifiedExpr -- quantified
     
-  Math = "$" (any *) "$"
+  math = "$" (any *) "$"
   plainName = alnum +
-  Identifier = Math | plainName
+  identifier = math | plainName
 
-  Type = caseInsensitive<"object"> | caseInsensitive<"objects">
+  Type = (caseInsensitive<"object"> | caseInsensitive<"objects">
     | caseInsensitive<"morphism"> | caseInsensitive<"morphisms"> 
     | caseInsensitive<"arrow"> | caseInsensitive<"arrows"> 
     | caseInsensitive<"category"> | caseInsensitive<"categories"> 
-    | caseInsensitive<"functor"> | caseInsensitive<"functors">
+    | caseInsensitive<"functor"> | caseInsensitive<"functors">) &space
 
-  ElementScope = caseInsensitive<"in"> Identifier | ":" Identifier
-  MapScope = ":" Identifier "->" Identifier
-    | caseInsensitive<"from"> Identifier caseInsensitive<"to"> Identifier
+  ElementScope = caseInsensitive<"in"> identifier | ":" identifier
+  MapScope = ":" identifier "->" identifier
+    | caseInsensitive<"from"> identifier caseInsensitive<"to"> identifier
   Scope = MapScope | ElementScope
 
   List<e> = ((e ",") + caseInsensitive<"and"> ?) ? e -- list
     | e caseInsensitive<"and"> e -- pair
 
-  TypedListScoped = Type ? List<Identifier> Scope
-  TypedListUnscoped = Type ? List<Identifier>
+  TypedListScoped = Type ? List<identifier> Scope
+  TypedListUnscoped = Type ? List<identifier>
   TypedList = TypedListScoped | TypedListUnscoped
 
   PlainExpr = List<TypedList>
 
   Given = caseInsensitive<"given"> List<TypedList>
 
-  exists = caseInsensitive<"is"> | caseInsensitive<"are"> | caseInsensitive<"exists"> | caseInsensitive<"exist">
+  exists = (caseInsensitive<"is"> | caseInsensitive<"are"> | caseInsensitive<"exists"> | caseInsensitive<"exist">) &space
   SuchThat = ((caseInsensitive<"such"> | caseInsensitive<"so">) caseInsensitive<"that">) -- suchthat
   | caseInsensitive<"s.t.">
   | ":"
-  article = caseInsensitive<"a"> | caseInsensitive<"an">
+  article = (caseInsensitive<"a"> | caseInsensitive<"an">) &space
   Exists = caseInsensitive<"there"> exists article ? caseInsensitive<"unique"> ? PlainExpr (SuchThat SubExpr) ? 
 
   ForallPrecedent = caseInsensitive<"given"> (article | caseInsensitive<"any">)? -- given

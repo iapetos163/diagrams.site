@@ -185,20 +185,20 @@ export const getMatcher = () => grammar.matcher();
 export const semantics = grammar.createSemantics();
 
 semantics.addAttribute('name', {
-  Math($1, node, $2) {
+  math($1, node, $2) {
     const norm = node.sourceString.trim().replaceAll(/\s+/g, ' ');
     return `$${norm}$`;
   },
   plainName(node) {
     return node.sourceString.toLowerCase();
   },
-  Identifier(node) {
+  identifier(node) {
     return node.name;
   },
 });
 
 semantics.addAttribute('exprType', {
-  Type(node): ExprType {
+  Type(node, space): ExprType {
     const s = node.sourceString.trim().toLowerCase();
     switch (s) {
       case 'object':

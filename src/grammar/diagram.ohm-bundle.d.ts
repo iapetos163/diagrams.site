@@ -15,10 +15,10 @@ export interface DiagramActionDict<T> extends ActionDict<T> {
   Diagram_plain?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode) => T;
   Diagram_quantified?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode, arg3: IterationNode, arg4: IterationNode, arg5: NonterminalNode) => T;
   Diagram?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  Math?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: TerminalNode) => T;
+  math?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: TerminalNode) => T;
   plainName?: (this: NonterminalNode, arg0: IterationNode) => T;
-  Identifier?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  Type?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  identifier?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Type?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
   ElementScope?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode, arg1: NonterminalNode) => T;
   MapScope?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode, arg1: NonterminalNode, arg2: NonterminalNode | TerminalNode, arg3: NonterminalNode) => T;
   Scope?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -30,10 +30,10 @@ export interface DiagramActionDict<T> extends ActionDict<T> {
   TypedList?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   PlainExpr?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Given?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
-  exists?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  exists?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
   SuchThat_suchthat?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
   SuchThat?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
-  article?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  article?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
   Exists?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: IterationNode, arg3: IterationNode, arg4: NonterminalNode, arg5: IterationNode, arg6: IterationNode) => T;
   ForallPrecedent_given?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   ForallPrecedent_for1?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: IterationNode) => T;
